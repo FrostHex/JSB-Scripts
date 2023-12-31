@@ -8,14 +8,15 @@ class Contract:
     def __init__(self):
         # 合约列表
         self.contract_list = [
+                10, "慢郎中",
+                20, "单手游戏",
+                25, "禁止冲刺",
+                40, "上下翻转屏幕",
                 40, "方向键颠倒",
                 40, "禁止向左移动",
-                10, "慢郎中",
-                20, "禁止冲刺",
-                30, "单手游戏",
-                40, "上下翻转屏幕",
                 40, "一手拿一根筷子, 只能用筷子触碰按键",
-                40, "遮住屏幕右侧3/4的屏幕"
+                40, "遮住屏幕右侧3/4的屏幕",
+                40, "按下方向键后立刻触发冲刺"
             ]
         
         # 合约总数
@@ -28,7 +29,6 @@ class Contract:
 
     # 展示合约列表
     def show_info(self):
-        print("-----------------")
         for i in range(1 , self.term_num + 1):
             print(f"{self.contract_dic[i]} {i}.{self.contract_list[i*2-1]} ({self.contract_list[i*2-2]}分)")
 
@@ -64,9 +64,18 @@ class Contract:
     # 开始运行合约
     def run(self):
         print("开始运行合约, 按ESC终止程序")
-
-        # 方向键颠倒
+        self.quit = 0
+        
+        # 慢郎中
         if self.contract_dic[1] == "√":
+            self.tendash = 1
+
+        # 禁止冲刺
+        if self.contract_dic[3] == "√":
+            keyboard.block_key("space")
+        
+        # 方向键颠倒
+        if self.contract_dic[5] == "√":
             keyboard.remap_hotkey("up", "down")
             keyboard.remap_hotkey("down", "up")
             keyboard.remap_hotkey("left", "right")
@@ -77,17 +86,9 @@ class Contract:
             keyboard.remap_hotkey("d", "a")
 
         # 禁止向左移动
-        if self.contract_dic[2] == "√":
+        if self.contract_dic[6] == "√":
             keyboard.block_key("left")
             keyboard.block_key("a")
-
-        # 慢郎中
-        if self.contract_dic[3] == "√":
-            print()
-
-        # 禁止冲刺
-        if self.contract_dic[4] == "√":
-            keyboard.block_key("space")
         
         # 遮住屏幕右侧3/4的屏幕
         if self.contract_dic[8] == "√":
@@ -107,12 +108,20 @@ class Contract:
             root.title("右侧四分之三")
             set_topmost(root)
             set_geometry(root)
-            root.mainloop()
+            root.update()
+        
+        # 遮住屏幕右侧3/4的屏幕
+        if self.contract_dic[9] == "√":
+            def on_key_event(e):
+                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down':  # 这里以按下 'a' 键为例
+                    keyboard.press_and_release('space')
+            keyboard.on_press(on_key_event)     # 监听按键事件
 
-# 主类
+
+# 主类 
 class MainProgram:
     def __init__(self):
-        self.contract = Contract()
+        self.contract = Contract() 
 
     def run(self):
         print("请选择挑战合约: \n")
