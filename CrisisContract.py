@@ -12,7 +12,6 @@ class Contract:
                 20, "单手游戏",
                 25, "禁止冲刺",
                 40, "上下翻转屏幕",
-                40, "方向键颠倒",
                 40, "禁止向左移动",
                 40, "一手拿一根筷子, 只能用筷子触碰按键",
                 40, "遮住屏幕右侧3/4的屏幕",
@@ -73,25 +72,14 @@ class Contract:
         # 禁止冲刺
         if self.contract_dic[3] == "√":
             keyboard.block_key("space")
-        
-        # 方向键颠倒
-        if self.contract_dic[5] == "√":
-            keyboard.remap_hotkey("up", "down")
-            keyboard.remap_hotkey("down", "up")
-            keyboard.remap_hotkey("left", "right")
-            keyboard.remap_hotkey("right", "left")
-            keyboard.remap_hotkey("w", "s")
-            keyboard.remap_hotkey("s", "w")
-            keyboard.remap_hotkey("a", "d")
-            keyboard.remap_hotkey("d", "a")
 
         # 禁止向左移动
-        if self.contract_dic[6] == "√":
+        if self.contract_dic[5] == "√":
             keyboard.block_key("left")
             keyboard.block_key("a")
         
         # 遮住屏幕右侧3/4的屏幕
-        if self.contract_dic[8] == "√":
+        if self.contract_dic[7] == "√":
             def set_topmost(window):
                 window.attributes('-topmost', True)  # 置顶窗口
 
@@ -110,10 +98,10 @@ class Contract:
             set_geometry(root)
             root.update()
         
-        # 遮住屏幕右侧3/4的屏幕
-        if self.contract_dic[9] == "√":
+        # 按下方向键后立刻触发冲刺
+        if self.contract_dic[8] == "√":
             def on_key_event(e):
-                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down':  # 这里以按下 'a' 键为例
+                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down': 
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
