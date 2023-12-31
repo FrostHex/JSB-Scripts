@@ -6,7 +6,7 @@
 
 **使用方法**：打开Bongo Cat Mver.exe
 
-感谢原作者 https://github.com/kuroni/bongocat-osu\
+感谢原作者 https://github.com/kuroni/bongocat-osu \
 以及up提供的教程 https://www.bilibili.com/read/readlist/rl191271
 
 ## 挑战项目脚本
@@ -33,7 +33,7 @@ Used to visualize the keyboard input: Space + WASD or ↑↓←→
 
 **Quick Start**: Open Bongo Cat Mver.exe
 
-Thanks for the original author https://github.com/kuroni/bongocat-osu\
+Thanks for the original author https://github.com/kuroni/bongocat-osu \
 and the customization tutorial provider https://www.bilibili.com/read/readlist/rl191271
 
 ## Challenge Event Scripts
