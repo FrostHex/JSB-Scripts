@@ -8,14 +8,14 @@ class Contract:
     def __init__(self):
         # 合约列表
         self.contract_list = [
-                10, "慢郎中",
+                10, "冲刺次数不超过10次",
                 20, "单手游戏",
-                25, "禁止冲刺",
+                25, "禁止空格冲刺",
+                25, "按下方向键后立刻触发冲刺",
+                35, "一手拿一根筷子, 只能用筷子触碰按键",
+                35, "遮住屏幕右侧3/4的区域",
                 40, "上下翻转屏幕",
-                40, "禁止向左移动",
-                40, "一手拿一根筷子, 只能用筷子触碰按键",
-                40, "遮住屏幕右侧3/4的屏幕",
-                40, "按下方向键后立刻触发冲刺"
+                40, "禁止向左移动"
             ]
         
         # 合约总数
@@ -65,21 +65,23 @@ class Contract:
         print("开始运行合约, 按ESC终止程序")
         self.quit = 0
         
-        # 慢郎中
+        # 冲刺次数不超过10次
         if self.contract_dic[1] == "√":
             self.tendash = 1
 
-        # 禁止冲刺
+        # 禁止空格冲刺
         if self.contract_dic[3] == "√":
             keyboard.block_key("space")
 
-        # 禁止向左移动
-        if self.contract_dic[5] == "√":
-            keyboard.block_key("left")
-            keyboard.block_key("a")
-        
-        # 遮住屏幕右侧3/4的屏幕
-        if self.contract_dic[7] == "√":
+        # 按下方向键后立刻触发冲刺
+        if self.contract_dic[4] == "√":
+            def on_key_event(e):
+                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down': 
+                    keyboard.press_and_release('space')
+            keyboard.on_press(on_key_event)     # 监听按键事件
+
+        # 遮住屏幕右侧3/4的区域
+        if self.contract_dic[6] == "√":
             def set_topmost(window):
                 window.attributes('-topmost', True)  # 置顶窗口
 
@@ -97,14 +99,11 @@ class Contract:
             set_topmost(root)
             set_geometry(root)
             root.update()
-        
-        # 按下方向键后立刻触发冲刺
-        if self.contract_dic[8] == "√":
-            def on_key_event(e):
-                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down': 
-                    keyboard.press_and_release('space')
-            keyboard.on_press(on_key_event)     # 监听按键事件
 
+        # 禁止向左移动
+        if self.contract_dic[8] == "√":
+            keyboard.block_key("left")
+            keyboard.block_key("a")
 
 # 主类 
 class MainProgram:
