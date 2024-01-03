@@ -67,7 +67,7 @@ class Contract:
         print("开始运行合约, 按ESC终止程序")
         self.quit = 0
         keys = ['W', 'A', 'S', 'D', 'Up', 'Left', 'Down', 'Right', 'Space']
-
+        arrowkeys = ['W', 'A', 'S', 'D', 'Up', 'Left', 'Down', 'Right']
         def DetectionThread():
             def KeyboardDetection():
                 # 当前按下的按键列表
@@ -92,37 +92,28 @@ class Contract:
         # 按下方向键后立刻触发冲刺
         if self.contract_dic[4] == "√":
             def on_key_event(e):
-                if e.name == 'w'or'a'or's'or'd'or'left'or'right'or'up'or'down': 
+                if e.name in arrowkeys:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
 
-        
+        #只能同时按下一个方向键
         if self.contract_dic[5] == "√":
 
             def detect_key():
                 key_state = False
                 while True:
-                    key_mapping = {
-                        'w': 'w',
-                        'a': 'a',
-                        's': 's',
-                        'd': 'd',
-                        'Up': 'Up',
-                        'Down': 'Down',
-                        'Left': 'Left',
-                        'Right': 'Right',
-                    }
+
                     pressedkey = None
-                    for key in key_mapping:
+                    for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            pressedkey = key_mapping[key]
+                            pressedkey = key
                             break
                     #遍历词典，检测按下的键
 
-                    if pressedkey in key_mapping.values():
+                    if pressedkey in arrowkeys:
                         if not key_state:
-                            for key in key_mapping.values():
+                            for key in arrowkeys:
                                 if key != pressedkey:
                                     keyboard.block_key(key)
                             key_state = True
@@ -131,7 +122,7 @@ class Contract:
                             #按下按键屏蔽其他键
                     else:
                         if key_state:
-                            for rkey in key_mapping.values():
+                            for rkey in arrowkeys:
                                 if rkey != releasedkey:
                                     keyboard.unblock_key(rkey)
                             key_state = False
