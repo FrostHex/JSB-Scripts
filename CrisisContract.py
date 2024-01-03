@@ -1,4 +1,5 @@
 import keyboard
+import threading
 import time
 import os
 import tkinter as tk
@@ -8,14 +9,15 @@ class Contract:
     def __init__(self):
         # 合约列表
         self.contract_list = [
-                10, "冲刺次数不超过10次",
-                20, "单手游戏",
-                25, "禁止空格冲刺",
+                10, "冲刺次数不超过10次*",
+                20, "单手游戏*",
+                25, "禁止空格",
                 25, "按下方向键后立刻触发冲刺",
-                35, "一手拿一根筷子, 只能用筷子触碰按键",
+                35, "只能同时按下一个方向键",
                 35, "遮住屏幕右侧3/4的区域",
-                40, "上下翻转屏幕",
-                40, "禁止向左移动"
+                40, "上下翻转屏幕*",
+                80, "禁止向左移动",
+                10, "检测"
             ]
         
         # 合约总数
@@ -64,7 +66,21 @@ class Contract:
     def run(self):
         print("开始运行合约, 按ESC终止程序")
         self.quit = 0
-        
+        keys = ['W', 'A', 'S', 'D', 'Up', 'Left', 'Down', 'Right', 'Space']
+
+        def DetectionThread():
+            def KeyboardDetection():
+                # 当前按下的按键列表
+                pressedkeys = [key for key in keys if keyboard.is_pressed(key)]
+                
+
+            while True:
+                KeyboardDetection()
+
+        thread = threading.Thread(target=DetectionThread)
+        thread.start()
+
+
         # 冲刺次数不超过10次
         if self.contract_dic[1] == "√":
             self.tendash = 1
@@ -80,6 +96,49 @@ class Contract:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
+
+        
+        if self.contract_dic[5] == "√":
+
+            def detect_key():
+                key_state = False
+                while True:
+                    key_mapping = {
+                        'w': 'w',
+                        'a': 'a',
+                        's': 's',
+                        'd': 'd',
+                        'Up': 'Up',
+                        'Down': 'Down',
+                        'Left': 'Left',
+                        'Right': 'Right',
+                    }
+                    pressedkey = None
+                    for key in key_mapping:
+                        if keyboard.is_pressed(key):
+                            pressedkey = key_mapping[key]
+                            break
+                    #遍历词典，检测按下的键
+
+                    if pressedkey in key_mapping.values():
+                        if not key_state:
+                            for key in key_mapping.values():
+                                if key != pressedkey:
+                                    keyboard.block_key(key)
+                            key_state = True
+                            global releasedkey
+                            releasedkey = pressedkey
+                            #按下按键屏蔽其他键
+                    else:
+                        if key_state:
+                            for rkey in key_mapping.values():
+                                if rkey != releasedkey:
+                                    keyboard.unblock_key(rkey)
+                            key_state = False
+                            #松开恢复
+            detect_key()
+            
+            
         # 遮住屏幕右侧3/4的区域
         if self.contract_dic[6] == "√":
             def set_topmost(window):
@@ -104,6 +163,18 @@ class Contract:
         if self.contract_dic[8] == "√":
             keyboard.block_key("left")
             keyboard.block_key("a")
+
+        if self.contract_dic[9] == "√":
+            def thetest():
+                print("123")
+            thetest()
+
+        
+
+
+
+
+
 
 # 主类 
 class MainProgram:
