@@ -3,6 +3,7 @@ import threading
 import time
 import os
 import tkinter as tk
+import subprocess
 
 # 合约
 class Contract:
@@ -160,20 +161,17 @@ class Contract:
             set_geometry(root)
             root.update()
 
+        #上下翻转屏幕
+        if self.contract_dic[7] == "√":
+            subprocess.run(['control', 'desk.cpl', 'Settings'])
+
         # 禁止向左移动
         if self.contract_dic[8] == "√":
             keyboard.block_key("left")
             keyboard.block_key("a")
 
         if self.contract_dic[9] == "√":
-            def thetest():
-                print("123")
-            thetest()
-
-        
-
-
-
+                print("test")
 
 
 
