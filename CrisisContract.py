@@ -9,8 +9,8 @@ class Contract:
     def __init__(self):
         # 合约列表
         self.contract_list = [
-                10, "冲刺次数不超过10次*",
-                20, "单手游戏*",
+                10, "冲刺后等待5秒才能继续冲刺",
+                20, "白送",
                 25, "禁止空格",
                 25, "按下方向键后立刻触发冲刺",
                 35, "只能同时按下一个方向键",
@@ -34,21 +34,19 @@ class Contract:
             print(f"{self.contract_dic[i]} {i}.{self.contract_list[i*2-1]} ({self.contract_list[i*2-2]}分)")
 
     # 选择合约条目
-    def choose(self,id):
-        id = int(id)
+    def choose(self, ids):
         try:
-            if id <= self.term_num and id > -1:
-                if id == 0:
-                    return 0
-                if self.contract_dic[id] == " ":
-                    self.contract_dic[id] = "√"
+            id_list = [int(i) for i in ids.split()]  # 将输入的数字字符串分割成列表
+            for id in id_list:
+                if id <= self.term_num and id > -1:
+                    if self.contract_dic[id] == " ":
+                        self.contract_dic[id] = "√"
+                    else:
+                        self.contract_dic[id] = " "
                 else:
-                    self.contract_dic[id] = " "
-                return 1
-            else:
-                print("输入的数字不合理，请重新输入!")
-                time.sleep(1)
-                return 1
+                    print(f"输入的数字 {id} 不合理，请重新输入!")
+                    time.sleep(1)
+            return 0
         except ValueError:
             print("输入的数字不合理，请重新输入!")
             time.sleep(1)
@@ -80,9 +78,20 @@ class Contract:
         detectthread.start()
 
 
-        # 冲刺次数不超过10次
+        # 冲刺后等待5秒才能继续冲刺
         if self.contract_dic[1] == "√":
-            self.tendash = 1
+            
+            def on_key_event(e):
+                global spaceblocking
+                spaceblocking = False
+                if e.name == "space":
+                    if not spaceblocking:
+                        spaceblocking = True
+                        keyboard.block_key("space")
+                        time.sleep(5)
+                        keyboard.unblock_key("space")
+                        spaceblocking = False
+            keyboard.on_press(on_key_event)
 
         # 禁止空格冲刺
         if self.contract_dic[3] == "√":
@@ -92,7 +101,7 @@ class Contract:
         if self.contract_dic[4] == "√":
             def on_key_event(e):
                 print(e.name)
-                if e.name() in arrowkeys:
+                if e.name in arrowkeys:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
@@ -179,7 +188,7 @@ class MainProgram:
             os.system('cls')
             self.contract.show_info()    # 展示合约列表
             self.contract.calculate_score()    # 计算分数
-            if self.contract.choose(input("(选择合约请输入数字序号并回车)\n(最后启动合约请输入0)\n")) == 0:    # 选择合约条目
+            if self.contract.choose(input("(选择合约请输入数字序号并回车（多个合约用空格分隔）)\n(最后启动合约请输入0)\n")) == 0:    # 选择合约条目
                 break
         self.contract.run()
         keyboard.wait('esc')
