@@ -66,19 +66,18 @@ class Contract:
     def run(self):
         print("开始运行合约, 按ESC终止程序")
         self.quit = 0
-        keys = ['W', 'A', 'S', 'D', 'Up', 'Left', 'Down', 'Right', 'Space']
-        arrowkeys = ['W', 'A', 'S', 'D', 'Up', 'Left', 'Down', 'Right']
+        keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
+        arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
         def DetectionThread():
             def KeyboardDetection():
                 # 当前按下的按键列表
                 pressedkeys = [key for key in keys if keyboard.is_pressed(key)]
                 
-
             while True:
                 KeyboardDetection()
 
-        thread = threading.Thread(target=DetectionThread)
-        thread.start()
+        detectthread = threading.Thread(target=DetectionThread)
+        detectthread.start()
 
 
         # 冲刺次数不超过10次
@@ -92,7 +91,8 @@ class Contract:
         # 按下方向键后立刻触发冲刺
         if self.contract_dic[4] == "√":
             def on_key_event(e):
-                if e.name in arrowkeys:
+                print(e.name)
+                if e.name() in arrowkeys:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
@@ -100,7 +100,7 @@ class Contract:
         #只能同时按下一个方向键
         if self.contract_dic[5] == "√":
 
-            def detect_key():
+            def chopsticks():
                 key_state = False
                 while True:
 
@@ -127,7 +127,8 @@ class Contract:
                                     keyboard.unblock_key(rkey)
                             key_state = False
                             #松开恢复
-            detect_key()
+            chopsthread = threading.Thread(target=chopsticks)
+            chopsthread.start()
             
             
         # 遮住屏幕右侧3/4的区域
