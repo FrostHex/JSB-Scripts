@@ -75,17 +75,18 @@ class Contract:
             while True:
                 KeyboardDetection()
 
+
         detectthread = threading.Thread(target=DetectionThread)
         detectthread.start()
 
 
         # 冲刺后等待5秒才能继续冲刺
         if self.contract_dic[1] == "√":
+            global spaceblocking
             
             def on_key_event(e):
-                global spaceblocking
-                spaceblocking = False
                 if e.name == "space":
+                    spaceblocking = False
                     if not spaceblocking:
                         spaceblocking = True
                         keyboard.block_key("space")
@@ -101,8 +102,7 @@ class Contract:
         # 按下方向键后立刻触发冲刺
         if self.contract_dic[4] == "√":
             def on_key_event(e):
-                print(e.name)
-                if e.name in arrowkeys:
+                if e.name in arrowkeys and not spaceblocking:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
