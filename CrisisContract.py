@@ -82,18 +82,17 @@ class Contract:
 
         # 冲刺后等待5秒才能继续冲刺
         if self.contract_dic[1] == "√":
-            global spaceblocking
-            
-            def on_key_event(e):
-                if e.name == "space":
+            spaceblocking = False   
+            def space_event(e):
+                global spaceblocking
+                if e.name == "space" and not spaceblocking:
+                    spaceblocking = True
+                    keyboard.block_key("space")
+                    time.sleep(5)
+                    keyboard.unblock_key("space")
                     spaceblocking = False
-                    if not spaceblocking:
-                        spaceblocking = True
-                        keyboard.block_key("space")
-                        time.sleep(5)
-                        keyboard.unblock_key("space")
-                        spaceblocking = False
-            keyboard.on_press(on_key_event)
+            keyboard.on_press(space_event)
+
 
         # 禁止空格冲刺
         if self.contract_dic[3] == "√":
