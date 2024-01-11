@@ -3,7 +3,7 @@ import threading
 import time
 import os
 import tkinter as tk
-import subprocess
+import rotatescreen
 
 # 合约
 class Contract:
@@ -76,6 +76,7 @@ class Contract:
                 KeyboardDetection()
 
 
+
         detectthread = threading.Thread(target=DetectionThread)
         detectthread.start()
 
@@ -84,7 +85,8 @@ class Contract:
         if self.contract_dic[1] == "√":
             spaceblocking = False   
             def space_event(e):
-                global spaceblocking
+                nonlocal spaceblocking
+                
                 if e.name == "space" and not spaceblocking:
                     spaceblocking = True
                     keyboard.block_key("space")
@@ -93,14 +95,15 @@ class Contract:
                     spaceblocking = False
             keyboard.on_press(space_event)
 
-
         # 禁止空格冲刺
         if self.contract_dic[3] == "√":
             keyboard.block_key("space")
 
         # 按下方向键后立刻触发冲刺
         if self.contract_dic[4] == "√":
+            
             def on_key_event(e):
+                print(spaceblocking)
                 if e.name in arrowkeys and not spaceblocking:
                     keyboard.press_and_release('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
@@ -162,7 +165,9 @@ class Contract:
 
         #上下翻转屏幕
         if self.contract_dic[7] == "√":
-            subprocess.run(['control', 'desk.cpl', 'Settings'])
+
+            screen = rotatescreen.get_primary_display()
+            screen.rotate_to(180)
 
         # 禁止向左移动
         if self.contract_dic[8] == "√":
