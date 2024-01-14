@@ -4,6 +4,8 @@ import time
 import os
 import tkinter as tk
 import rotatescreen
+import pyautogui
+
 
 # 合约
 class Contract:
@@ -16,9 +18,9 @@ class Contract:
                 25, "按下方向键后立刻触发冲刺",
                 35, "只能同时按下一个方向键",
                 35, "遮住屏幕右侧3/4的区域",
-                40, "上下翻转屏幕*",
+                40, "上下翻转屏幕",
                 80, "禁止向左移动",
-                10, "检测"
+                1, "检测"
             ]
         
         # 合约总数
@@ -70,15 +72,13 @@ class Contract:
         def DetectionThread():
             def KeyboardDetection():
                 # 当前按下的按键列表
+                global pressedkeys
                 pressedkeys = [key for key in keys if keyboard.is_pressed(key)]
                 
             while True:
                 KeyboardDetection()
-
-
-
         detectthread = threading.Thread(target=DetectionThread)
-        detectthread.start()
+        #detectthread.start()
 
 
         # 冲刺后等待5秒才能继续冲刺
@@ -86,7 +86,6 @@ class Contract:
             spaceblocking = False   
             def space_event(e):
                 nonlocal spaceblocking
-                
                 if e.name == "space" and not spaceblocking:
                     spaceblocking = True
                     keyboard.block_key("space")
@@ -101,13 +100,13 @@ class Contract:
 
         # 按下方向键后立刻触发冲刺
         if self.contract_dic[4] == "√":
-            
+            spaceblocking = False
             def on_key_event(e):
-                print(spaceblocking)
                 if e.name in arrowkeys and not spaceblocking:
-                    keyboard.press_and_release('space')
+                    for key in arrowkeys:
+                        if keyboard.is_pressed(key):
+                            pyautogui.keyDown('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
-
 
         #只能同时按下一个方向键
         if self.contract_dic[5] == "√":
@@ -168,6 +167,10 @@ class Contract:
 
             screen = rotatescreen.get_primary_display()
             screen.rotate_to(180)
+            def restore():
+                screen.rotate_to(0)
+            keyboard.on_press_key("esc", restore)
+
 
         # 禁止向左移动
         if self.contract_dic[8] == "√":
@@ -175,7 +178,11 @@ class Contract:
             keyboard.block_key("a")
 
         if self.contract_dic[9] == "√":
-                print("test")
+            def test():
+                while True:
+                    print(spaceblocking)
+            testthread = threading.Thread(target=test)
+            testthread.start()
 
 
 
