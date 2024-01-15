@@ -21,6 +21,7 @@ class Contract:
                 35, "遮住屏幕右侧3/4的区域",
                 40, "上下翻转屏幕",
                 20, "屏幕逐渐变暗，按空格恢复",
+                20, "不断出现窗口遮挡屏幕",
                 1, "检测"
             ]
         
@@ -70,6 +71,30 @@ class Contract:
         self.quit = 0
         keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
+
+
+        def start_root(window):
+            window.attributes('-topmost', True)  # 置顶窗口
+            window.overrideredirect(True)  #隐藏窗口
+            window.attributes('-disabled', True)  #禁止点击
+            window.attributes('-alpha', 0.5)
+            rootx = (window.winfo_screenwidth() - 800) // 2
+            rooty = window.winfo_screenheight() - 400
+            window.configure(bg="black")
+            window.geometry(f"800x200+{rootx}+{rooty}")
+            font_style = ("Segoe UI", 32, "bold")
+            label = tk.Label(root, text="合约启动 按esc退出", font=font_style, fg="white", bg="black")
+            label.pack(pady=50)
+
+        def hide_root(window, delay):
+            window.after(delay, lambda: window.geometry("1x1+0+0"))
+
+        root = tk.Tk()
+        start_root(root)
+        root.after(2000, lambda: hide_root(root, 0))
+        
+
+
         def DetectionThread():
             def KeyboardDetection():
                 # 当前按下的按键列表
@@ -153,7 +178,10 @@ class Contract:
         # 遮住屏幕右侧3/4的区域
         if self.contract_dic[6] == "√":
             def set_topmost(window):
+                window.configure(bg="black")
                 window.attributes('-topmost', True)  # 置顶窗口
+                window.overrideredirect(True)  #隐藏窗口
+                window.attributes('-disabled', True)
 
             def set_geometry(window):
                 screen_width = window.winfo_screenwidth()
@@ -164,12 +192,12 @@ class Contract:
 
                 window.geometry(f"{width}x{height}+{screen_width - width}+0")  # 设置窗口位置和大小
 
-            root = tk.Tk()
-            root.title("右侧四分之三")
-            set_topmost(root)
-            set_geometry(root)
-            root.update()
-
+            mask = tk.Toplevel(root)
+            mask.title("右侧四分之三")
+            set_topmost(mask)
+            set_geometry(mask)
+            mask.mainloop()
+            
         #上下翻转屏幕
         if self.contract_dic[7] == "√":
 
@@ -198,26 +226,25 @@ class Contract:
                 height = screen_height - 2
                 window.geometry(f"{width}x{height}+{screen_width - width}+0")  # 设置窗口位置和大小
 
-            root = tk.Tk()
-            root.title("Transparent Window")
-            set_background_color(root, "black")
-            set_transparency(root, 0.5)
-            set_window(root)
-            original_position = (root.winfo_x(), root.winfo_y())
+            storm = tk.Toplevel(root)
+            set_background_color(storm, "black")
+            set_transparency(storm, 0.5)
+            set_window(storm)
+            original_position = (storm.winfo_x(), storm.winfo_y())
             def flash():
                 for _ in range(3):
-                    set_background_color(root, "white")
-                    set_transparency(root, 0.4)
-                    root.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                    set_background_color(storm, "white")
+                    set_transparency(storm, 0.4)
+                    storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
                     time.sleep(0.03)
-                    set_background_color(root, "black")
-                    set_transparency(root, 0.2)
-                    root.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                    set_background_color(storm, "black")
+                    set_transparency(storm, 0.2)
+                    storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
                     time.sleep(0.03)
-                root.geometry(f"+{original_position[0]}+{original_position[1]}")
+                storm.geometry(f"+{original_position[0]}+{original_position[1]}")
                 for i in range(100):
                     transparency = i / 100
-                    set_transparency(root, transparency)
+                    set_transparency(storm, transparency)
                     time.sleep(0.005)
                     if keyboard.is_pressed("space") == True:
                         return
@@ -227,28 +254,51 @@ class Contract:
                 cooldown = False
                 while True:
                     if keyboard.is_pressed("esc"):
-                        root.destroy()
+                        storm.destroy()
                     elif keyboard.is_pressed("space"):
                         if not cooldown:
                             cooldown = True
                             flash()
                             cooldown = False
                         else:
-                            set_background_color(root, "black")
-                            set_transparency(root, 0.8)
-                            root.geometry(f"+{original_position[0]}+{original_position[1]}")
+                            set_background_color(storm, "black")
+                            set_transparency(storm, 0.8)
+                            storm.geometry(f"+{original_position[0]}+{original_position[1]}")
             cooldownthread = threading.Thread(target=cooldownfuc)
             cooldownthread.start()
-            root.mainloop()
+            storm.mainloop()
 
-        #测试
+
+        #不断窗口出现遮挡屏幕
         if self.contract_dic[9] == "√":
+            def set_window2(window):
+                window.title("HELLO")
+                window.configure(bg="#fe1f6f")
+                window.attributes('-topmost', True)  # 置顶窗口
+                window.attributes('-disabled', True)  #禁止点击
+                sidelength = window.winfo_screenwidth() // 5
+                width = window.winfo_screenwidth() - sidelength
+                height = window.winfo_screenheight() - sidelength
+                window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
+                # 设置窗口位置和大小
+            def open_window(index):
+                window = tk.Toplevel(root)
+                set_window2(window)
+                window.after(200, lambda: open_window(index + 1))
+                window.after(1000, lambda: window.destroy())
+            open_window(0)
+            tk.mainloop()
+
+
+            
+        #测试
+        if self.contract_dic[10] == "√":
             def test():
                 while True:
                     print(spaceblocking)
             testthread = threading.Thread(target=test)
             testthread.start()
-
+        root.mainloop()
 
 
 
