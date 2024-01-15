@@ -6,6 +6,7 @@ import sys
 import tkinter as tk
 import rotatescreen
 import random
+from datetime import datetime
 from pynput import keyboard as pkeyboard
 
 
@@ -59,18 +60,33 @@ class Contract:
             time.sleep(1)
             return 1
 
-    # 计算分数
-    def calculate_score(self):
+
+    # 开始运行合约
+    def run(self):
+        print("开始运行合约, 按R键终止程序")
+        self.quit = 0
+
+        #计算分数
         self.score = 0
         for i in range(1 , self.term_num + 1):
             if self.contract_dic[i] == "√":
                 self.score += self.contract_list[i*2-2]
         print(f"总分数: {self.score}")
 
-    # 开始运行合约
-    def run(self):
-        print("开始运行合约, 按R键终止程序")
-        self.quit = 0
+        def append_to_score_file(text):
+            file_path = "Score.txt"
+
+            # 检查文件是否存在，如果不存在则创建
+            if not os.path.exists(file_path):
+                with open(file_path, 'w') as file:
+                    file.write("")
+
+            # 在文件末尾追加一行文字
+            with open(file_path, 'a') as file:
+                file.write(text + "\n")
+        
+        append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
+
         keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
 
@@ -128,7 +144,7 @@ class Contract:
             keyboard.block_key("left")
             keyboard.block_key("a")
 
-        # 禁止空格冲刺
+        # 禁止空格
         if self.contract_dic[3] == "√":
             keyboard.block_key("space")
 
@@ -289,8 +305,7 @@ class MainProgram:
         while True:
             os.system('cls')
             self.contract.show_info()    # 展示合约列表
-            self.contract.calculate_score()    # 计算分数
-            if self.contract.choose(input("(选择合约请输入数字序号并回车（多个合约用空格分隔）)\n(最后启动合约请输入0)\n")) == 0:    # 选择合约条目
+            if self.contract.choose(input("(选择合约请输入数字序号并回车（多个合约用空格分隔）)\n")) == 0:    # 选择合约条目
                 break
         self.contract.run()
         keyboard.wait()
