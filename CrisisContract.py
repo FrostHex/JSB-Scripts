@@ -2,10 +2,12 @@ import keyboard
 import threading
 import time
 import os
+import sys
 import tkinter as tk
 import rotatescreen
-import pyautogui
 import random
+from pynput import keyboard as pkeyboard
+
 
 
 # 合约
@@ -67,7 +69,7 @@ class Contract:
 
     # 开始运行合约
     def run(self):
-        print("开始运行合约, 按ESC终止程序")
+        print("开始运行合约, 按R键终止程序")
         self.quit = 0
         keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
@@ -77,14 +79,14 @@ class Contract:
             window.attributes('-topmost', True)  # 置顶窗口
             window.overrideredirect(True)  #隐藏窗口
             window.attributes('-disabled', True)  #禁止点击
-            window.attributes('-alpha', 0.5)
+            window.attributes('-alpha', 0.7)
             rootx = (window.winfo_screenwidth() - 800) // 2
             rooty = window.winfo_screenheight() - 400
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按esc退出", font=font_style, fg="white", bg="black")
-            label.pack(pady=50)
+            label = tk.Label(root, text="合约启动 按R键退出", font=font_style, fg="white", bg="black")
+            label.pack(pady=60)
 
         def hide_root(window, delay):
             window.after(delay, lambda: window.geometry("1x1+0+0"))
@@ -138,47 +140,22 @@ class Contract:
                 if e.name in arrowkeys and not spaceblocking:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            pyautogui.press('space')
+                            keyboard.send('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
         #只能同时按下一个方向键
         if self.contract_dic[5] == "√":
-
-            def chopsticks():
-                key_state = False
-                while True:
-
-                    pressedkey = None
-                    for key in arrowkeys:
-                        if keyboard.is_pressed(key):
-                            pressedkey = key
-                            break
-                    #遍历词典，检测按下的键
-
-                    if pressedkey in arrowkeys:
-                        if not key_state:
-                            for key in arrowkeys:
-                                if key != pressedkey:
-                                    keyboard.block_key(key)
-                            key_state = True
-                            global releasedkey
-                            releasedkey = pressedkey
-                            #按下按键屏蔽其他键
-                    else:
-                        if key_state:
-                            for rkey in arrowkeys:
-                                if rkey != releasedkey:
-                                    keyboard.unblock_key(rkey)
-                            key_state = False
-                            #松开恢复
-            chopsthread = threading.Thread(target=chopsticks)
-            chopsthread.start()
-            
+            def chopsticks(key):
+                for fkey in arrowkeys:
+                    if fkey != key.name and key.name in arrowkeys:
+                        keyboard.release(fkey)
+            keyboard.on_press(chopsticks)
+                
             
         # 遮住屏幕右侧3/4的区域
         if self.contract_dic[6] == "√":
             def set_topmost(window):
-                window.configure(bg="black")
+                window.configure(bg="#fe1f6f")
                 window.attributes('-topmost', True)  # 置顶窗口
                 window.overrideredirect(True)  #隐藏窗口
                 window.attributes('-disabled', True)
@@ -196,16 +173,12 @@ class Contract:
             mask.title("右侧四分之三")
             set_topmost(mask)
             set_geometry(mask)
-            mask.mainloop()
             
         #上下翻转屏幕
         if self.contract_dic[7] == "√":
 
             screen = rotatescreen.get_primary_display()
             screen.rotate_to(180)
-            def restore():
-                screen.rotate_to(0)
-            keyboard.on_press_key("esc", restore)
 
         #屏幕逐渐变暗，冲刺时恢复
         if self.contract_dic[8] == "√":
@@ -253,7 +226,7 @@ class Contract:
                 global cooldown
                 cooldown = False
                 while True:
-                    if keyboard.is_pressed("esc"):
+                    if keyboard.is_pressed("r"):
                         storm.destroy()
                     elif keyboard.is_pressed("space"):
                         if not cooldown:
@@ -266,7 +239,6 @@ class Contract:
                             storm.geometry(f"+{original_position[0]}+{original_position[1]}")
             cooldownthread = threading.Thread(target=cooldownfuc)
             cooldownthread.start()
-            storm.mainloop()
 
 
         #不断窗口出现遮挡屏幕
@@ -276,7 +248,7 @@ class Contract:
                 window.configure(bg="#fe1f6f")
                 window.attributes('-topmost', True)  # 置顶窗口
                 window.attributes('-disabled', True)  #禁止点击
-                sidelength = window.winfo_screenwidth() // 5
+                sidelength = window.winfo_screenwidth() // 4
                 width = window.winfo_screenwidth() - sidelength
                 height = window.winfo_screenheight() - sidelength
                 window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
@@ -287,9 +259,6 @@ class Contract:
                 window.after(200, lambda: open_window(index + 1))
                 window.after(1000, lambda: window.destroy())
             open_window(0)
-            tk.mainloop()
-
-
             
         #测试
         if self.contract_dic[10] == "√":
@@ -307,7 +276,15 @@ class MainProgram:
     def __init__(self):
         self.contract = Contract() 
 
+    def restart_program(self, e):
+        print("Restarting program...")
+        screen = rotatescreen.get_primary_display()
+        screen.rotate_to(0)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
     def run(self):
+        keyboard.on_press_key('r', self.restart_program)
         print("请选择挑战合约: \n")
         while True:
             os.system('cls')
@@ -316,7 +293,7 @@ class MainProgram:
             if self.contract.choose(input("(选择合约请输入数字序号并回车（多个合约用空格分隔）)\n(最后启动合约请输入0)\n")) == 0:    # 选择合约条目
                 break
         self.contract.run()
-        keyboard.wait('esc')
+        keyboard.wait()
 
 # 主函数入口点
 if __name__ == "__main__":
