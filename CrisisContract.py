@@ -5,6 +5,7 @@ import os
 import tkinter as tk
 import rotatescreen
 import pyautogui
+import random
 
 
 # 合约
@@ -12,14 +13,14 @@ class Contract:
     def __init__(self):
         # 合约列表
         self.contract_list = [
-                10, "冲刺附带五秒冷却",
-                20, "白送",
+                20, "冲刺附带五秒冷却",
+                60, "禁止向左移动",
                 25, "禁止空格",
                 25, "按下方向键后立刻触发冲刺",
                 35, "只能同时按下一个方向键",
                 35, "遮住屏幕右侧3/4的区域",
                 40, "上下翻转屏幕",
-                60, "禁止向左移动",
+                20, "屏幕逐渐变暗，按空格恢复",
                 1, "检测"
             ]
         
@@ -83,7 +84,7 @@ class Contract:
 
         # 冲刺后等待5秒才能继续冲刺
         if self.contract_dic[1] == "√":
-            spaceblocking = False   
+            spaceblocking = False
             def space_event(e):
                 nonlocal spaceblocking
                 if e.name == "space" and not spaceblocking:
@@ -92,7 +93,13 @@ class Contract:
                     time.sleep(5)
                     keyboard.unblock_key("space")
                     spaceblocking = False
-            keyboard.on_press(space_event)
+            thread = threading.Thread(target=keyboard.on_press, args=(space_event,))
+            thread.start()
+
+        # 禁止向左移动
+        if self.contract_dic[2] == "√":
+            keyboard.block_key("left")
+            keyboard.block_key("a")
 
         # 禁止空格冲刺
         if self.contract_dic[3] == "√":
@@ -102,10 +109,11 @@ class Contract:
         if self.contract_dic[4] == "√":
             spaceblocking = False
             def on_key_event(e):
+                nonlocal spaceblocking
                 if e.name in arrowkeys and not spaceblocking:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            pyautogui.keyDown('space')
+                            pyautogui.press('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
         #只能同时按下一个方向键
@@ -171,18 +179,76 @@ class Contract:
                 screen.rotate_to(0)
             keyboard.on_press_key("esc", restore)
 
-
-        # 禁止向左移动
+        #屏幕逐渐变暗，冲刺时恢复
         if self.contract_dic[8] == "√":
-            keyboard.block_key("left")
-            keyboard.block_key("a")
+            def set_transparency(window, alpha):
+                window.attributes('-alpha', alpha)  # 设置窗口透明度
 
+            def set_background_color(window, color):
+                window.configure(bg=color)  # 设置窗口背景颜色
+
+            def set_window(window):
+                window.attributes('-topmost', True)  # 置顶窗口
+                window.overrideredirect(True)  #隐藏窗口
+                window.attributes('-disabled', True)  #禁止点击
+
+                screen_width = window.winfo_screenwidth()
+                screen_height = window.winfo_screenheight()
+                width = screen_width
+                height = screen_height - 2
+                window.geometry(f"{width}x{height}+{screen_width - width}+0")  # 设置窗口位置和大小
+
+            root = tk.Tk()
+            root.title("Transparent Window")
+            set_background_color(root, "black")
+            set_transparency(root, 0.5)
+            set_window(root)
+            original_position = (root.winfo_x(), root.winfo_y())
+            def flash():
+                for _ in range(3):
+                    set_background_color(root, "white")
+                    set_transparency(root, 0.4)
+                    root.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                    time.sleep(0.03)
+                    set_background_color(root, "black")
+                    set_transparency(root, 0.2)
+                    root.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                    time.sleep(0.03)
+                root.geometry(f"+{original_position[0]}+{original_position[1]}")
+                for i in range(100):
+                    transparency = i / 100
+                    set_transparency(root, transparency)
+                    time.sleep(0.005)
+                    if keyboard.is_pressed("space") == True:
+                        return
+            
+            def cooldownfuc():
+                global cooldown
+                cooldown = False
+                while True:
+                    if keyboard.is_pressed("esc"):
+                        root.destroy()
+                    elif keyboard.is_pressed("space"):
+                        if not cooldown:
+                            cooldown = True
+                            flash()
+                            cooldown = False
+                        else:
+                            set_background_color(root, "black")
+                            set_transparency(root, 0.8)
+                            root.geometry(f"+{original_position[0]}+{original_position[1]}")
+            cooldownthread = threading.Thread(target=cooldownfuc)
+            cooldownthread.start()
+            root.mainloop()
+
+        #测试
         if self.contract_dic[9] == "√":
             def test():
                 while True:
                     print(spaceblocking)
             testthread = threading.Thread(target=test)
             testthread.start()
+
 
 
 
