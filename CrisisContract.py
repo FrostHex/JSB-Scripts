@@ -14,65 +14,65 @@ from pynput import keyboard as pkeyboard
 # 合约
 class Contract:
     def __init__(self):
-        # 合约列表
+        # 合约的二维列表, 每个条目内的参数为 [分数, 内容, 选中状态]
         self.contract_list = [
-                20, "冲刺附带五秒冷却",
-                60, "禁止向左移动",
-                25, "禁止空格",
-                25, "按下方向键后立刻触发冲刺",
-                35, "只能同时按下一个方向键",
-                35, "遮住屏幕右侧3/4的区域",
-                40, "上下翻转屏幕",
-                20, "屏幕逐渐变暗，按空格恢复",
-                20, "不断出现窗口遮挡屏幕",
-                1, "检测"
+                [20, '冲刺附带五秒冷却'],
+                [60, '禁止向左移动'],
+                [25, '禁止空格'],
+                [25, '按下方向键后立刻触发冲刺'],
+                [35, '只能同时按下一个方向键'],
+                [35, '遮住屏幕右侧3/4的区域'],
+                [40, '上下翻转屏幕'],
+                [20, '屏幕逐渐变暗，按空格恢复'],
+                [20, '不断出现窗口遮挡屏幕'],
+                [1,  '检测']
             ]
         
-        # 合约总数
-        self.term_num = int(len(self.contract_list) / 2)
-        
-        # 合约选中状态
-        self.contract_dic = {}
-        for i in range(1 , self.term_num + 1):
-            self.contract_dic[i] = " "
+        self.score = 0  # 总分数
+        self.term_num = len(self.contract_list)  # 合约总数
+        for i in range(self.term_num):  # 初始化合约选中状态
+            self.contract_list[i].append('-')
 
     # 展示合约列表
     def show_info(self):
-        for i in range(1 , self.term_num + 1):
-            print(f"{self.contract_dic[i]} {i}.{self.contract_list[i*2-1]} ({self.contract_list[i*2-2]}分)")
+        for i in range(self.term_num):
+            print(f"{self.contract_list[i][2]} {i+1}.{self.contract_list[i][1]} ({self.contract_list[i][0]}分)")
 
-    # 选择合约条目
-    def choose(self, ids):
+        #计算当前分数
+        for i in range(self.term_num):
+            if self.contract_list[i][2] == "√":
+                self.score += self.contract_list[i][0]
+        print("-"*15 + f"\n总分数: {self.score}")
+
+
+    # 选择合约条目 (返回值: 0循环 1结束 2报错)
+    def choose(self):
+        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n")
         try:
-            id_list = [int(i) for i in ids.split()]  # 将输入的数字字符串分割成列表
-            for id in id_list:
-                if id <= self.term_num and id > -1:
-                    if self.contract_dic[id] == " ":
-                        self.contract_dic[id] = "√"
+            if ids == '':  # 若用户只输入回车
+                return 1
+            id_list = [int(i) for i in ids.split()]  # 将输入的数字字符串分割成列表, 并转换为int型
+            for id in id_list:  # 选中此条合约, 若此条目已选中则将其取消
+                if id <= self.term_num-1 and id > -1:
+                    if self.contract_list[id-1][2] == '-':
+                        self.contract_list[id-1][2] = '√'
                     else:
-                        self.contract_dic[id] = " "
+                        self.contract_list[id-1][2] = '-'
                 else:
                     print(f"输入的数字 {id} 不合理，请重新输入!")
                     time.sleep(1)
             return 0
-        except ValueError:
-            print("输入的数字不合理，请重新输入!")
+        except:
+            print("输入有误!")
             time.sleep(1)
-            return 1
-
+            return 2
 
     # 开始运行合约
     def run(self):
         print("开始运行合约, 按R键终止程序")
         self.quit = 0
 
-        #计算分数
-        self.score = 0
-        for i in range(1 , self.term_num + 1):
-            if self.contract_dic[i] == "√":
-                self.score += self.contract_list[i*2-2]
-        print(f"总分数: {self.score}")
-
+        # 用文档记录分数
         def append_to_score_file(text):
             file_path = "Score.txt"
 
@@ -125,8 +125,8 @@ class Contract:
         #detectthread.start()
 
 
-        # 冲刺后等待5秒才能继续冲刺
-        if self.contract_dic[1] == "√":
+        # 1.冲刺附带五秒冷却
+        if self.contract_list[0][2] == "√":
             spaceblocking = False
             def space_event(e):
                 nonlocal spaceblocking
@@ -139,17 +139,17 @@ class Contract:
             thread = threading.Thread(target=keyboard.on_press, args=(space_event,))
             thread.start()
 
-        # 禁止向左移动
-        if self.contract_dic[2] == "√":
+        # 2.禁止向左移动
+        if self.contract_list[1][2] == "√":
             keyboard.block_key("left")
             keyboard.block_key("a")
 
-        # 禁止空格
-        if self.contract_dic[3] == "√":
+        # 3.禁止空格
+        if self.contract_list[2][2] == "√":
             keyboard.block_key("space")
 
-        # 按下方向键后立刻触发冲刺
-        if self.contract_dic[4] == "√":
+        # 4.按下方向键后立刻触发冲刺
+        if self.contract_list[3][2] == "√":
             spaceblocking = False
             def on_key_event(e):
                 nonlocal spaceblocking
@@ -159,8 +159,8 @@ class Contract:
                             keyboard.send('space')
             keyboard.on_press(on_key_event)     # 监听按键事件
 
-        #只能同时按下一个方向键
-        if self.contract_dic[5] == "√":
+        # 5.只能同时按下一个方向键
+        if self.contract_list[4][2] == "√":
             def chopsticks(key):
                 for fkey in arrowkeys:
                     if fkey != key.name and key.name in arrowkeys:
@@ -168,8 +168,8 @@ class Contract:
             keyboard.on_press(chopsticks)
                 
             
-        # 遮住屏幕右侧3/4的区域
-        if self.contract_dic[6] == "√":
+        # 6.遮住屏幕右侧3/4的区域
+        if self.contract_list[5][2] == "√":
             def set_topmost(window):
                 window.configure(bg="#fe1f6f")
                 window.attributes('-topmost', True)  # 置顶窗口
@@ -190,14 +190,14 @@ class Contract:
             set_topmost(mask)
             set_geometry(mask)
             
-        #上下翻转屏幕
-        if self.contract_dic[7] == "√":
+        # 7.上下翻转屏幕
+        if self.contract_list[6][2] == "√":
 
             screen = rotatescreen.get_primary_display()
             screen.rotate_to(180)
 
-        #屏幕逐渐变暗，冲刺时恢复
-        if self.contract_dic[8] == "√":
+        # 8.屏幕逐渐变暗，冲刺时恢复
+        if self.contract_list[7][2] == "√":
             def set_transparency(window, alpha):
                 window.attributes('-alpha', alpha)  # 设置窗口透明度
 
@@ -257,8 +257,8 @@ class Contract:
             cooldownthread.start()
 
 
-        #不断窗口出现遮挡屏幕
-        if self.contract_dic[9] == "√":
+        # 9.不断窗口出现遮挡屏幕
+        if self.contract_list[8][2] == "√":
             def set_window2(window):
                 window.title("HELLO")
                 window.configure(bg="#fe1f6f")
@@ -276,8 +276,8 @@ class Contract:
                 window.after(1000, lambda: window.destroy())
             open_window(0)
             
-        #测试
-        if self.contract_dic[10] == "√":
+        # 10.测试
+        if self.contract_list[9][2] == "√":
             def test():
                 while True:
                     print(spaceblocking)
@@ -294,7 +294,7 @@ class MainProgram:
 
     def restart_program(self, e):
         print("Restarting program...")
-        screen = rotatescreen.get_primary_display()
+        screen = rotatescreen.get_primary_display() # 获取主显示器对象
         screen.rotate_to(0)
         python = sys.executable
         os.execl(python, python, *sys.argv)
@@ -305,7 +305,7 @@ class MainProgram:
         while True:
             os.system('cls')
             self.contract.show_info()    # 展示合约列表
-            if self.contract.choose(input("(选择合约请输入数字序号并回车（多个合约用空格分隔）)\n")) == 0:    # 选择合约条目
+            if self.contract.choose() == 1:    # 选择合约条目
                 break
         self.contract.run()
         keyboard.wait()
