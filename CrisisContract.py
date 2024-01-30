@@ -296,13 +296,14 @@ class MainProgram:
         print("Restarting program...")
         screen = rotatescreen.get_primary_display() # 获取主显示器对象
         screen.rotate_to(0)
+        del self.contract
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
     def run(self):
         keyboard.on_press_key('r', self.restart_program)
-        print("请选择挑战合约: \n")
         while True:
+            print("请选择挑战合约: \n")
             os.system('cls')
             self.contract.show_info()    # 展示合约列表
             if self.contract.choose() == 1:    # 选择合约条目
