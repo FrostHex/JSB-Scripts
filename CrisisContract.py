@@ -7,16 +7,20 @@ import tkinter as tk
 import rotatescreen
 import random
 from datetime import datetime
-from pynput import keyboard as pkeyboard
 
 
+# 实现点击穿透
+import ctypes
+from win32api import SetWindowLong,RGB
+from win32con import WS_EX_LAYERED,WS_EX_TRANSPARENT,GWL_EXSTYLE,LWA_ALPHA
+from win32gui import SetLayeredWindowAttributes
 
 # 合约
 class Contract:
     def __init__(self):
         # 合约的二维列表, 每个条目内的参数为 [分数, 内容, 选中状态]
         self.contract_list = [
-                [20, '冲刺附带五秒冷却'],
+                [20, '冲刺附带两秒冷却'],
                 [60, '禁止向左移动'],
                 [25, '禁止空格'],
                 [25, '按下方向键后立刻触发冲刺'],
@@ -72,6 +76,8 @@ class Contract:
         print("开始运行合约, 按R键终止程序")
         self.quit = 0
 
+        
+
         # 用文档记录分数
         def append_to_score_file(text):
             file_path = "Score.txt"
@@ -125,16 +131,20 @@ class Contract:
         #detectthread.start()
 
 
-        # 1.冲刺附带五秒冷却
+        # 1.冲刺附带两秒冷却
         if self.contract_list[0][2] == "√":
             spaceblocking = False
             def space_event(e):
+                
                 nonlocal spaceblocking
                 if e.name == "space" and not spaceblocking:
+                    
                     spaceblocking = True
                     keyboard.block_key("space")
-                    time.sleep(5)
+                    time.sleep(2)
+                    
                     keyboard.unblock_key("space")
+                    keyboard.release("space")
                     spaceblocking = False
             thread = threading.Thread(target=keyboard.on_press, args=(space_event,))
             thread.start()
@@ -157,6 +167,12 @@ class Contract:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
                             keyboard.send('space')
+                            if self.contract_list[0][2] == "√":
+                                class espace:
+                                    pass
+                                espace = espace()
+                                espace.name = "space"
+                                space_event(espace)
             keyboard.on_press(on_key_event)     # 监听按键事件
 
         # 5.只能同时按下一个方向键
@@ -198,6 +214,20 @@ class Contract:
 
         # 8.屏幕逐渐变暗，冲刺时恢复
         if self.contract_list[7][2] == "√":
+
+            def setWinThrowON():
+                
+                
+                while True:
+                    hwnd = ctypes.windll.user32.FindWindowW(None, "tempestissimo")
+                    if hwnd != 0:
+                        hWindow = hwnd
+                        exStyle = WS_EX_LAYERED | WS_EX_TRANSPARENT
+                        SetWindowLong(hWindow, GWL_EXSTYLE, exStyle)
+                        SetLayeredWindowAttributes(hWindow, RGB(0, 0, 0), 150, LWA_ALPHA)
+                        break
+
+       
             def set_transparency(window, alpha):
                 window.attributes('-alpha', alpha)  # 设置窗口透明度
 
@@ -208,6 +238,7 @@ class Contract:
                 window.attributes('-topmost', True)  # 置顶窗口
                 window.overrideredirect(True)  #隐藏窗口
                 window.attributes('-disabled', True)  #禁止点击
+                window.title("tempestissimo") 
                 screen_width = window.winfo_screenwidth()
                 screen_height = window.winfo_screenheight()
                 width = screen_width
@@ -250,7 +281,6 @@ class Contract:
             original_position = (storm.winfo_x(), storm.winfo_y())
             stormthread = threading.Thread(target=stromstart)
             stormthread.start()
-
 
         # 9.不断窗口出现遮挡屏幕
         if self.contract_list[8][2] == "√":
