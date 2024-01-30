@@ -7,8 +7,6 @@ import tkinter as tk
 import rotatescreen
 import random
 from datetime import datetime
-
-
 # 实现点击穿透
 import ctypes
 from win32api import SetWindowLong,RGB
@@ -43,6 +41,7 @@ class Contract:
             print(f"{self.contract_list[i][2]} {i+1}.{self.contract_list[i][1]} ({self.contract_list[i][0]}分)")
 
         #计算当前分数
+        self.score = 0
         for i in range(self.term_num):
             if self.contract_list[i][2] == "√":
                 self.score += self.contract_list[i][0]
@@ -76,8 +75,6 @@ class Contract:
         print("开始运行合约, 按R键终止程序")
         self.quit = 0
 
-        
-
         # 用文档记录分数
         def append_to_score_file(text):
             file_path = "Score.txt"
@@ -92,10 +89,8 @@ class Contract:
                 file.write(text + "\n")
         
         append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
-
         keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-
 
         def start_root(window):
             window.attributes('-topmost', True)  # 置顶窗口
@@ -117,7 +112,6 @@ class Contract:
         start_root(root)
         root.after(2000, lambda: hide_root(root, 0))
         
-
 
         def DetectionThread():
             def KeyboardDetection():
@@ -182,7 +176,6 @@ class Contract:
                     if fkey != key.name and key.name in arrowkeys:
                         keyboard.release(fkey)
             keyboard.on_press(chopsticks)
-                
             
         # 6.遮住屏幕右侧3/4的区域
         if self.contract_list[5][2] == "√":
@@ -216,8 +209,6 @@ class Contract:
         if self.contract_list[7][2] == "√":
 
             def setWinThrowON():
-                
-                
                 while True:
                     hwnd = ctypes.windll.user32.FindWindowW(None, "tempestissimo")
                     if hwnd != 0:
@@ -226,7 +217,6 @@ class Contract:
                         SetWindowLong(hWindow, GWL_EXSTYLE, exStyle)
                         SetLayeredWindowAttributes(hWindow, RGB(0, 0, 0), 150, LWA_ALPHA)
                         break
-
        
             def set_transparency(window, alpha):
                 window.attributes('-alpha', alpha)  # 设置窗口透明度
@@ -281,6 +271,8 @@ class Contract:
             original_position = (storm.winfo_x(), storm.winfo_y())
             stormthread = threading.Thread(target=stromstart)
             stormthread.start()
+            setWinThrowtread = threading.Thread(target=setWinThrowON)
+            setWinThrowtread.start()
 
         # 9.不断窗口出现遮挡屏幕
         if self.contract_list[8][2] == "√":
