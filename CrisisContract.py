@@ -27,7 +27,7 @@ class Contract:
                 [35, '只能同时按下一个方向键'],
                 [35, '遮住屏幕右侧3/4的区域'],
                 [40, '上下翻转屏幕'],
-                [20, '屏幕逐渐变暗，按空格恢复'],
+                [25, '屏幕逐渐变暗，按空格恢复'],
                 [20, '不断出现窗口遮挡屏幕'],
                 [1,  '检测']
             ]
@@ -239,56 +239,48 @@ class Contract:
                 window.overrideredirect(True)  #隐藏窗口
                 window.attributes('-disabled', True)  #禁止点击
                 window.title("tempestissimo") 
-
                 screen_width = window.winfo_screenwidth()
                 screen_height = window.winfo_screenheight()
                 width = screen_width
                 height = screen_height - 2
                 window.geometry(f"{width}x{height}+{screen_width - width}+0")  # 设置窗口位置和大小
 
+            def flash():
+                    # 闪电照亮
+                    for _ in range(3):
+                        set_background_color(storm, "white")
+                        set_transparency(storm, 0.3)
+                        storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                        time.sleep(0.03)
+                        set_background_color(storm, "black")
+                        set_transparency(storm, 0.2)
+                        storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                        time.sleep(0.03)
+                    storm.geometry(f"+{original_position[0]}+{original_position[1]}")
+                    # 光芒消逝
+                    self.linger = random.randint (50, 100)*0.02
+                    for i in range(1,101):
+                        set_transparency(storm, int(0.1 * 1.05 ** (i + 42)) / 100)
+                        time.sleep(self.linger/100)
+                    # time.sleep(0.5*(2.5-self.linger))  # 额外冷却时间
+            
+            def stromstart():
+                while True:
+                    if keyboard.is_pressed("r"):
+                        storm.destroy()
+                    elif keyboard.is_pressed("space") and self.cooldown == True:
+                        self.cooldown = False  # 锁定
+                        flash()
+                        self.cooldown = True  # 解锁
+
+            self.cooldown = True  # 控制闪电冷却
             storm = tk.Toplevel(root)
             set_background_color(storm, "black")
             set_transparency(storm, 0.5)
             set_window(storm)
             original_position = (storm.winfo_x(), storm.winfo_y())
-            def flash():
-                for _ in range(3):
-                    set_background_color(storm, "white")
-                    set_transparency(storm, 0.4)
-                    storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
-                    time.sleep(0.03)
-                    set_background_color(storm, "black")
-                    set_transparency(storm, 0.2)
-                    storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
-                    time.sleep(0.03)
-                storm.geometry(f"+{original_position[0]}+{original_position[1]}")
-                for i in range(100):
-                    transparency = i / 100
-                    set_transparency(storm, transparency)
-                    time.sleep(0.005)
-                    if keyboard.is_pressed("space") == True:
-                        return
-            
-            def cooldownfuc():
-                global cooldown
-                cooldown = False
-                while True:
-                    if keyboard.is_pressed("r"):
-                        storm.destroy()
-                    elif keyboard.is_pressed("space"):
-                        if not cooldown:
-                            cooldown = True
-                            flash()
-                            cooldown = False
-                        else:
-                            set_background_color(storm, "black")
-                            set_transparency(storm, 0.8)
-                            storm.geometry(f"+{original_position[0]}+{original_position[1]}")
-            cooldownthread = threading.Thread(target=cooldownfuc)
-            cooldownthread.start()
-            setWinThrowtread = threading.Thread(target=setWinThrowON)
-            setWinThrowtread.start()
-
+            stormthread = threading.Thread(target=stromstart)
+            stormthread.start()
 
         # 9.不断窗口出现遮挡屏幕
         if self.contract_list[8][2] == "√":
@@ -329,13 +321,15 @@ class MainProgram:
         print("Restarting program...")
         screen = rotatescreen.get_primary_display() # 获取主显示器对象
         screen.rotate_to(0)
+        del self.contract
+        keyboard.press_and_release('backspace')
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
     def run(self):
         keyboard.on_press_key('r', self.restart_program)
-        print("请选择挑战合约: \n")
         while True:
+            print("请选择挑战合约: \n")
             os.system('cls')
             self.contract.show_info()    # 展示合约列表
             if self.contract.choose() == 1:    # 选择合约条目
