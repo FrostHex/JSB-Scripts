@@ -231,34 +231,59 @@ class Contract:
                 window.geometry(f"{width}x{height}+{screen_width - width}+0")  # 设置窗口位置和大小
 
             def flash():
-                    # 闪电照亮
-                    for _ in range(3):
-                        set_background_color(storm, "white")
-                        set_transparency(storm, 0.3)
-                        storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
-                        time.sleep(0.03)
-                        set_background_color(storm, "black")
-                        set_transparency(storm, 0.2)
-                        storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
-                        time.sleep(0.03)
-                    storm.geometry(f"+{original_position[0]}+{original_position[1]}")
-                    # 光芒消逝
-                    self.linger = random.randint (50, 100)*0.02
-                    for i in range(1,101):
-                        set_transparency(storm, int(0.1 * 1.05 ** (i + 42)) / 100)
-                        time.sleep(self.linger/100)
-                    # time.sleep(0.5*(2.5-self.linger))  # 打闪额外冷却时间
+                while True:
+                    if self.add == 1:
+                        self.add = 0
+                        # print (self.add)
+                        # 闪电照亮
+                        for _ in range(3):
+                            set_background_color(storm, "white")
+                            set_transparency(storm, 0.3)
+                            storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                            time.sleep(0.03)
+                            set_background_color(storm, "black")
+                            set_transparency(storm, 0.2)
+                            storm.geometry(f"+{random.randint(-50, 50)}+{random.randint(-50, 50)}")
+                            time.sleep(0.03)
+                        storm.geometry(f"+{original_position[0]}+{original_position[1]}")
+                        # 光芒消逝
+                        # 可修改random.randint()内的参数, 值越大照明时间越长
+                        # 总持续时间为: 随机出的整数 * 0.15
+                        self.linger = round(random.randint(4, 10) * 0.0015, 4)  # round( ,4)保留4位小数
+                        for i in range(100):
+                            if self.add == 1:
+                                break
+                            set_transparency(storm, flash_sequence[i])  # 读取序列
+                            # print(flash_sequence[i])
+                            # print('linger:'+str(self.linger))
+                            time.sleep(self.linger)
             
             def stromstart():
                 while True:
                     if keyboard.is_pressed("r"):
                         storm.destroy()
-                    elif keyboard.is_pressed("space") and self.cooldown == True:
-                        self.cooldown = False  # 锁定
-                        flash()
-                        self.cooldown = True  # 解锁
+                    elif keyboard.is_pressed("space"):
+                        if self.lock == 0:
+                            self.lock = 1  # 锁定
+                            # print (self.lock)
+                            self.add = 1 # 可以添加新闪电
+                            # print (self.add)
+                    time.sleep(0.1)
 
-            self.cooldown = True  # 控制闪电冷却
+            def on_key_release(event):
+                if event.name == 'space':
+                    self.lock = 0  # 解锁
+                    # print (self.lock)
+
+            def lock():
+                while 1:
+                    keyboard.on_release_key('space', on_key_release)   
+                    keyboard.wait() # 阻塞等待，松开空格进on_key_release回调
+                    time.sleep(0.1)
+
+            self.add = 0  # 添加闪屏的标志位
+            self.lock = 0  # 控制闪屏冷却的标志位
+            flash_sequence = [int(0.1 * 1.05 ** (i + 41.6)) / 100 for i in range(1,101)]
             storm = tk.Toplevel(root)
             set_background_color(storm, "black")  # 初始化窗口为半透明
             set_transparency(storm, 0.5)
@@ -268,6 +293,10 @@ class Contract:
             stormthread.start()
             setWinThrowtread = threading.Thread(target=setWinThrowON)  # 设置窗口穿透线程
             setWinThrowtread.start()
+            flashthread = threading.Thread(target=flash)  # 设置闪屏线程
+            flashthread.start()
+            lockthread = threading.Thread(target=lock)  # 设置闪屏冷却线程
+            lockthread.start()
 
         # 9.不断出现窗口遮挡屏幕
         if self.contract_list[8][2] == "√":
