@@ -58,6 +58,10 @@ class Contract:
             for id in id_list:  # 选中此条合约, 若此条目已选中则将其取消
                 if id <= self.term_num and id > 0:
                     if self.contract_list[id-1][2] == '-':
+                        if id == 3:
+                            self.contract_list[3][2] = '-'
+                        elif id == 4:
+                            self.contract_list[2][2] = '-'
                         self.contract_list[id-1][2] = '√'
                     else:
                         self.contract_list[id-1][2] = '-'
@@ -96,7 +100,7 @@ class Contract:
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按R键退出", font=font_style, fg="white", bg="black")
+            label = tk.Label(root, text="合约启动 按 Delete 键退出", font=font_style, fg="white", bg="black")
             label.pack(pady=60)
 
         def hide_root(window, delay):
@@ -114,7 +118,7 @@ class Contract:
 
         # keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-        print("开始运行合约, 按R键终止程序")
+        print("开始运行合约, 按 Delete 键终止程序")
         append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
         root = tk.Tk()
         start_root(root)
@@ -341,12 +345,11 @@ class MainProgram:
         screen = rotatescreen.get_primary_display()  # 获取主显示器对象
         screen.rotate_to(0)  # 屏幕旋转归零
         del self.contract  # 删除实体释放内存
-        keyboard.press_and_release('backspace') # 删掉输入框里新输入的 r
         python = sys.executable
         os.execl(python, python, *sys.argv)  # 启动一个新的 Python 进程
 
     def run(self):
-        keyboard.on_press_key('r', self.restart_program)
+        keyboard.on_press_key('delete', self.restart_program)
         while True:
             print("请选择挑战合约: \n")
             os.system('cls')  # 清除终端内的文字
