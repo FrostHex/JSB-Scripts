@@ -21,7 +21,7 @@
 
 备注：\
 源码为CrisisContract.py\
-想要自定义合约请自行修改源码，然后运行`pyinstall ./CrisisContract.py`生成新的exe文件
+想要自定义合约请自行修改源码，然后运行`pyinstaller ./CrisisContract.py`生成新的exe文件
 
 代码仅供学习交流使用，任何使用者在使用本代码时，应自行承担风险。本代码作者不对代码的准确性、完整性、可靠性或适用性做出任何明示或暗示的陈述或保证。
 
@@ -52,6 +52,6 @@ example:
 
 Notes:\
 The source code is CrisisContract.py\
-To customize the contract, please modify the source code then run `pyinstall ./CrisisContract.py` to generate new exe file.
+To customize the contract, please modify the source code then run `pyinstaller ./CrisisContract.py` to generate new exe file.
 
 This code is only for learning and communication purposes. Any user who uses this code should bear the risks on their own. The code author does not make any express or implied statements or warranties regarding the accuracy, completeness, reliability, or suitability of the code.

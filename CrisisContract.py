@@ -261,7 +261,7 @@ class Contract:
                             set_transparency(storm, flash_sequence[i])  # 读取序列
                             # print(flash_sequence[i])
                             # print('linger:'+str(self.linger))
-                            time.sleep(0.01)
+                            time.sleep(self.linger)
                         # 光芒余波
                         flash_sequence = aftermath_list[random.randint(0,3)]
                         for i in range(len(flash_sequence)):
@@ -271,6 +271,7 @@ class Contract:
                             # print(flash_sequence[i])
                             # print('linger:'+str(self.linger))
                             time.sleep(0.02)
+                    time.sleep(0.05)
             
             def stromstart():
                 while True:
@@ -312,13 +313,13 @@ class Contract:
             set_transparency(storm, 0.5)
             set_window(storm)
             original_position = (storm.winfo_x(), storm.winfo_y())
-            stormthread = threading.Thread(target=stromstart)  # 设置闪屏线程
-            stormthread.start()
             setWinThrowtread = threading.Thread(target=setWinThrowON)  # 设置窗口穿透线程
             setWinThrowtread.start()
-            flashthread = threading.Thread(target=flash)  # 设置闪屏线程
+            stormthread = threading.Thread(target=stromstart)  # 设置暴风雨线程，控制锁定、允许添加新闪电
+            stormthread.start()
+            flashthread = threading.Thread(target=flash)  # 设置闪屏线程，执行闪电并清除添加闪电的标志位
             flashthread.start()
-            lockthread = threading.Thread(target=lock)  # 设置闪屏冷却线程
+            lockthread = threading.Thread(target=lock)  # 设置闪屏冷却线程，控制解锁
             lockthread.start()
 
         # 9.不断出现窗口遮挡屏幕
