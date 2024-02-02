@@ -18,16 +18,16 @@ class Contract:
     def __init__(self):
         # 合约的二维列表, 每个条目内的参数为 [分数, 内容, 选中状态]
         self.contract_list = [
-                [25, '冲刺附带三秒冷却'],
-                [60, '禁止向左移动'],
-                [25, '出现弹跳窗口遮挡屏幕'],
+                [20, '随机选择下列1~3条 (选中此条后将会跳过选择直接运行!)'],
                 [20, '按下方向键后立刻触发冲刺'],
+                [25, '冲刺附带三秒冷却'],
                 [25, '只能同时按下一个方向键'],
-                [30, '遮住屏幕右侧3/4的区域'],
-                [40, '上下翻转屏幕'],
-                [30, '屏幕逐渐变暗，按空格恢复'],
+                [25, '出现弹跳窗口遮挡屏幕'],
                 [30, '不断出现窗口遮挡屏幕'],
-                [20,  '随机选择1-3种']
+                [30, '遮住屏幕右侧3/4的区域'],
+                [30, '屏幕逐渐变暗，按空格恢复'],
+                [40, '上下翻转屏幕'],
+                [60, '禁止向左移动']
             ]
         
         self.score = 0  # 总分数
@@ -66,11 +66,13 @@ class Contract:
                         #     self.contract_list[3][2] = '-'
                         # elif id == 4:
                         #     self.contract_list[2][2] = '-'
-                        if id == 10:
-                            random_contract = [random.randint(1, 9) for _ in range(3)]
+                        if id == 1:
+                            random_contract = [random.randint(2, 10) for _ in range(3)]
                             for i in range(3):
                                 self.contract_list[random_contract[i]][2] = '√'
                         self.contract_list[id-1][2] = '√'
+                        if self.contract_list[0][2] == '√':
+                            keyboard.send('enter')
                     else:
                         self.contract_list[id-1][2] = '-'
                 else:
@@ -137,8 +139,25 @@ class Contract:
 
         #=================================== 合约内容代码 ===================================#
 
-        # 1.冲刺附带两秒冷却
-        if self.contract_list[0][2] == "√":
+        # 2.按下方向键后立刻触发冲刺
+        if self.contract_list[1][2] == "√":
+            def on_key_event_4(e):
+                nonlocal spaceblocking
+                if e.name in arrowkeys and not spaceblocking:
+                    for key in arrowkeys:
+                        if keyboard.is_pressed(key):
+                            if self.contract_list[2][2] == "√":
+                                class espace:
+                                    pass
+                                espace = espace()
+                                espace.name = "space"
+                                space_event(espace)
+                                
+            spaceblocking = False                    
+            keyboard.on_press(on_key_event_4)     # 监听按键事件
+
+        # 3.冲刺附带三秒冷却
+        if self.contract_list[2][2] == "√":
             def space_event(e):
                 nonlocal spaceblocking
                 if e.name == "space" and not spaceblocking:
@@ -153,14 +172,18 @@ class Contract:
             thread = threading.Thread(target=keyboard.on_press, args=(space_event,))  # ags传参,附带逗号表示单个元素的元组
             thread.start()
 
-        # 2.禁止向左移动
-        if self.contract_list[1][2] == "√":
-            keyboard.block_key("left")
-            keyboard.block_key("a")
+        # 4.只能同时按下一个方向键
+        if self.contract_list[3][2] == "√":
+            def chopsticks(key):
+                for fkey in arrowkeys:
+                    if fkey != key.name and key.name in arrowkeys:
+                        keyboard.release(fkey)
+                        
+            keyboard.on_press(chopsticks)
 
-        # 3.出现弹跳窗口遮挡屏幕
-        if self.contract_list[2][2] == "√":
-            if self.contract_list[8][2] == "√":
+        # 5.出现弹跳窗口遮挡屏幕
+        if self.contract_list[4][2] == "√":
+            if self.contract_list[5][2] == "√":
                 def open_window():
                     # 初始化
                     window = [tk.Toplevel(root) for _ in range(6)] # 创建6个顶级窗口
@@ -205,22 +228,8 @@ class Contract:
                     window.attributes('-topmost', True)
                     window.attributes('-disabled', True)
 
-
+                    # 拖尾窗口降低透明度
                     def shrink_window(windows):
-                        # 拖尾窗口降低大小
-                        # # 获取当前窗口的宽度和高度
-                        # current_width = windows.winfo_width()
-                        # current_height = windows.winfo_height()
-                        # # 减小窗口的宽度和高度
-                        # new_width = current_width - 10
-                        # new_height = current_height - 10
-                        # # 更新窗口大小
-                        # if new_width >= 0 and new_height >= 0:
-                        #     windows.geometry(f"{new_width}x{new_height}+{windows.winfo_x() + 5}+{windows.winfo_y() + 5}")
-                        # else:
-                        #     windows.destroy()
-
-                        # 拖尾窗口降低透明度
                         # 获得透明度 减小窗口的透明度
                         transparency = windows.attributes('-alpha') - 0.05
                         # 更新窗口透明度
@@ -260,34 +269,30 @@ class Contract:
             lockthread = threading.Thread(target=open_window)
             lockthread.start()
 
-        # 4.按下方向键后立刻触发冲刺
-        if self.contract_list[3][2] == "√":
-            def on_key_event_4(e):
-                nonlocal spaceblocking
-                if e.name in arrowkeys and not spaceblocking:
-                    for key in arrowkeys:
-                        if keyboard.is_pressed(key):
-                            if self.contract_list[0][2] == "√":
-                                class espace:
-                                    pass
-                                espace = espace()
-                                espace.name = "space"
-                                space_event(espace)
-                                
-            spaceblocking = False                    
-            keyboard.on_press(on_key_event_4)     # 监听按键事件
-
-        # 5.只能同时按下一个方向键
-        if self.contract_list[4][2] == "√":
-            def chopsticks(key):
-                for fkey in arrowkeys:
-                    if fkey != key.name and key.name in arrowkeys:
-                        keyboard.release(fkey)
-                        
-            keyboard.on_press(chopsticks)
-
-        # 6.遮住屏幕右侧3/4的区域
+        # 6.不断出现窗口遮挡屏幕
         if self.contract_list[5][2] == "√":
+            if not self.contract_list[4][2] == "√":
+                def set_window2(window):
+                    window.title("HELLO")
+                    window.configure(bg="#fe1f6f")
+                    window.attributes('-topmost', True)  # 置顶窗口
+                    window.attributes('-disabled', True)  # 禁止点击
+                    sidelength = window.winfo_screenwidth() // 4
+                    width = window.winfo_screenwidth() - sidelength
+                    height = window.winfo_screenheight() - sidelength
+                    # 设置窗口位置和大小
+                    window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
+                    
+                def open_window(index):
+                    window = tk.Toplevel(root)
+                    set_window2(window)
+                    window.after(200, lambda: open_window(index + 1))  # 200ms后执行匿名函数, 匿名函数调用 open_window 函数, 传参 index+1
+                    window.after(1000, lambda: window.destroy())
+
+                open_window(0)
+
+        # 7.遮住屏幕右侧3/4的区域
+        if self.contract_list[6][2] == "√":
             def set_topmost(window):
                 window.configure(bg="#fe1f6f")
                 window.attributes('-topmost', True)  # 置顶窗口
@@ -304,12 +309,7 @@ class Contract:
             mask = tk.Toplevel(root)
             mask.title("右侧四分之三")
             set_topmost(mask)
-            set_geometry(mask)   
-
-        # 7.上下翻转屏幕
-        if self.contract_list[6][2] == "√":
-            screen = rotatescreen.get_primary_display()
-            screen.rotate_to(180)
+            set_geometry(mask)  
 
         # 8.屏幕逐渐变暗，冲刺时恢复
         if self.contract_list[7][2] == "√":
@@ -430,27 +430,15 @@ class Contract:
             lockthread = threading.Thread(target=lock)  # 设置闪屏冷却线程，控制解锁
             lockthread.start()
 
-        # 9.不断出现窗口遮挡屏幕
+        # 9.上下翻转屏幕
         if self.contract_list[8][2] == "√":
-            if not self.contract_list[2][2] == "√":
-                def set_window2(window):
-                    window.title("HELLO")
-                    window.configure(bg="#fe1f6f")
-                    window.attributes('-topmost', True)  # 置顶窗口
-                    window.attributes('-disabled', True)  # 禁止点击
-                    sidelength = window.winfo_screenwidth() // 4
-                    width = window.winfo_screenwidth() - sidelength
-                    height = window.winfo_screenheight() - sidelength
-                    # 设置窗口位置和大小
-                    window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
-                    
-                def open_window(index):
-                    window = tk.Toplevel(root)
-                    set_window2(window)
-                    window.after(200, lambda: open_window(index + 1))  # 200ms后执行匿名函数, 匿名函数调用 open_window 函数, 传参 index+1
-                    window.after(1000, lambda: window.destroy())
+            screen = rotatescreen.get_primary_display()
+            screen.rotate_to(180)
 
-                open_window(0)
+        # 10.禁止向左移动
+        if self.contract_list[9][2] == "√":
+            keyboard.block_key("left")
+            keyboard.block_key("a")
 
         #===================================================================================#
 
