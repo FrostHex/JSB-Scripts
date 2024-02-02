@@ -100,7 +100,7 @@ class Contract:
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按 Delete 键退出", font=font_style, fg="white", bg="black")
+            label = tk.Label(root, text="合约启动 按 ESC 键退出", font=font_style, fg="white", bg="black")
             label.pack(pady=60)
 
         def hide_root(window, delay):
@@ -118,7 +118,7 @@ class Contract:
 
         # keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-        print("开始运行合约, 按 Delete 键终止程序")
+        print("开始运行合约, 按 ESC 键终止程序")
         append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
         root = tk.Tk()
         start_root(root)
@@ -275,7 +275,7 @@ class Contract:
             
             def stromstart():
                 while True:
-                    if keyboard.is_pressed("delete"):
+                    if keyboard.is_pressed("esc"):
                         storm.destroy()
                     elif keyboard.is_pressed("space"):
                         if self.lock == 0:
@@ -369,7 +369,7 @@ class MainProgram:
         os.execl(python, python, *sys.argv)  # 启动一个新的 Python 进程
 
     def run(self):
-        keyboard.on_press_key('delete', self.restart_program)
+        keyboard.on_press_key('esc', self.restart_program)
         while True:
             print("请选择挑战合约: \n")
             os.system('cls')  # 清除终端内的文字
