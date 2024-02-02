@@ -20,7 +20,7 @@ class Contract:
         self.contract_list = [
                 [20, '冲刺附带两秒冷却'],
                 [60, '禁止向左移动'],
-                [25, '禁止空格'],
+                [25, '出现弹跳窗口遮挡屏幕'],
                 [25, '按下方向键后立刻触发冲刺'],
                 [35, '只能同时按下一个方向键'],
                 [35, '遮住屏幕右侧3/4的区域'],
@@ -34,6 +34,9 @@ class Contract:
         self.term_num = len(self.contract_list)  # 合约总数
         for i in range(self.term_num):  # 生成第三栏'选中状态', 初始化为不勾选
             self.contract_list[i].append('-')  
+
+        # 测试某一条合约用，减轻输入负担
+        # self.contract_list[8][2]= "√"
 
     # 展示合约信息
     def show_info(self):
@@ -58,10 +61,11 @@ class Contract:
             for id in id_list:  # 选中此条合约, 若此条目已选中则将其取消
                 if id <= self.term_num and id > 0:
                     if self.contract_list[id-1][2] == '-':
-                        if id == 3:
-                            self.contract_list[3][2] = '-'
-                        elif id == 4:
-                            self.contract_list[2][2] = '-'
+                        # 禁同时选的模板代码
+                        # if id == 3:
+                        #     self.contract_list[3][2] = '-'
+                        # elif id == 4:
+                        #     self.contract_list[2][2] = '-'
                         self.contract_list[id-1][2] = '√'
                     else:
                         self.contract_list[id-1][2] = '-'
@@ -150,9 +154,38 @@ class Contract:
             keyboard.block_key("left")
             keyboard.block_key("a")
 
-        # 3.禁止空格
+        # 3.出现弹跳窗口遮挡屏幕
         if self.contract_list[2][2] == "√":
-            keyboard.block_key("space")
+            def open_window():
+                # 初始化
+                window = [tk.Toplevel(root) for _ in range(6)]
+                sidelength = window[0].winfo_screenwidth() // 6
+                width = window[0].winfo_screenwidth() - sidelength
+                height = window[0].winfo_screenheight() - sidelength
+                vx = [10 + random.randint(-5,5) for _ in range(6)]
+                vy = [10 + random.randint(-5,5) for _ in range(6)]
+                x = [random.randint(0, width) for _ in range(6)]
+                y = [random.randint(0, height) for _ in range(6)]
+                for i in range(6):
+                    window[i].title("弹弹弹")
+                    window[i].configure(bg="#fe1f6f")
+                    window[i].attributes('-topmost', True)  # 置顶窗口
+                    window[i].attributes('-disabled', True)  # 禁止点击
+                # 循环更新位置
+                while True:
+                    for i in range(6):
+                        window[i].geometry(f"{sidelength}x{sidelength}+{x[i]}+{y[i]}")
+                        if x[i] >= width or x[i] <= 0:
+                            vx[i] = -1 * vx[i]
+                        if y[i] >= height or y[i] <= 0:
+                            vy[i] = -1 * vy[i]
+                        x[i] = x[i] + vx[i]
+                        y[i] = y[i] + vy[i]
+                    time.sleep(0.015)
+                # window.after(1000, lambda: window.destroy())
+            
+            lockthread = threading.Thread(target=open_window)  # 设置屏保窗口的线程
+            lockthread.start()
 
         # 4.按下方向键后立刻触发冲刺
         if self.contract_list[3][2] == "√":
