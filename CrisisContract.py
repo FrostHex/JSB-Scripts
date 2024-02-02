@@ -20,8 +20,8 @@ class Contract:
         self.contract_list = [
                 [30, '冲刺附带三秒冷却'],
                 [60, '禁止向左移动'],
-                [40, 'undefined'],
-                [10, '按下方向键后立刻触发冲刺'],
+                [25, '出现弹跳窗口遮挡屏幕'],
+                [20, '按下方向键后立刻触发冲刺'],
                 [25, '只能同时按下一个方向键'],
                 [30, '遮住屏幕右侧3/4的区域'],
                 [40, '上下翻转屏幕'],
@@ -34,6 +34,9 @@ class Contract:
         self.term_num = len(self.contract_list)  # 合约总数
         for i in range(self.term_num):  # 生成第三栏'选中状态', 初始化为不勾选
             self.contract_list[i].append('-')  
+
+        # 测试某一条合约用，减轻输入负担
+        # self.contract_list[8][2]= "√"
 
     # 展示合约信息
     def show_info(self):
@@ -58,15 +61,15 @@ class Contract:
             for id in id_list:  # 选中此条合约, 若此条目已选中则将其取消
                 if id <= self.term_num and id > 0:
                     if self.contract_list[id-1][2] == '-':
-                        if id == 3:
-                            self.contract_list[3][2] = '-'
-                        elif id == 4:
-                            self.contract_list[2][2] = '-'
+                        # 禁同时选的模板代码
+                        # if id == 3:
+                        #     self.contract_list[3][2] = '-'
+                        # elif id == 4:
+                        #     self.contract_list[2][2] = '-'
                         if id == 10:
                             random_contract = [random.randint(1, 9) for _ in range(3)]
                             for i in range(3):
                                 self.contract_list[random_contract[i]][2] = '√'
-                                
                         self.contract_list[id-1][2] = '√'
                     else:
                         self.contract_list[id-1][2] = '-'
@@ -105,7 +108,7 @@ class Contract:
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按 Delete 键退出", font=font_style, fg="white", bg="black")
+            label = tk.Label(root, text="合约启动 按 ESC 键退出", font=font_style, fg="white", bg="black")
             label.pack(pady=60)
 
         def hide_root(window, delay):
@@ -123,7 +126,7 @@ class Contract:
 
         # keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-        print("开始运行合约, 按 Delete 键终止程序")
+        print("开始运行合约, 按 ESC 键终止程序")
         append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
         root = tk.Tk()
         start_root(root)
@@ -155,14 +158,41 @@ class Contract:
             keyboard.block_key("left")
             keyboard.block_key("a")
 
-        # 3.undefined
+        # 3.出现弹跳窗口遮挡屏幕
         if self.contract_list[2][2] == "√":
-            pass
-
+            def open_window():
+                # 初始化
+                window = [tk.Toplevel(root) for _ in range(6)]
+                sidelength = window[0].winfo_screenwidth() // 6
+                width = window[0].winfo_screenwidth() - sidelength
+                height = window[0].winfo_screenheight() - sidelength
+                vx = [10 + random.randint(-5,5) for _ in range(6)]
+                vy = [10 + random.randint(-5,5) for _ in range(6)]
+                x = [random.randint(0, width) for _ in range(6)]
+                y = [random.randint(0, height) for _ in range(6)]
+                for i in range(6):
+                    window[i].title("弹弹弹")
+                    window[i].configure(bg="#fe1f6f")
+                    window[i].attributes('-topmost', True)  # 置顶窗口
+                    window[i].attributes('-disabled', True)  # 禁止点击
+                # 循环更新位置
+                while True:
+                    for i in range(6):
+                        window[i].geometry(f"{sidelength}x{sidelength}+{x[i]}+{y[i]}")
+                        if x[i] >= width or x[i] <= 0:
+                            vx[i] = -1 * vx[i]
+                        if y[i] >= height or y[i] <= 0:
+                            vy[i] = -1 * vy[i]
+                        x[i] = x[i] + vx[i]
+                        y[i] = y[i] + vy[i]
+                    time.sleep(0.015)
+                # window.after(1000, lambda: window.destroy())
+            
+            lockthread = threading.Thread(target=open_window)  # 设置屏保窗口的线程
+            lockthread.start()
 
         # 4.按下方向键后立刻触发冲刺
         if self.contract_list[3][2] == "√":
-            spaceblocking = False
             def on_key_event_4(e):
                 nonlocal spaceblocking
                 if e.name in arrowkeys and not spaceblocking:
@@ -176,6 +206,8 @@ class Contract:
                                 espace = espace()
                                 espace.name = "space"
                                 space_event(espace)
+                                
+            spaceblocking = False                    
             keyboard.on_press(on_key_event_4)     # 监听按键事件
 
         # 5.只能同时按下一个方向键
@@ -184,6 +216,7 @@ class Contract:
                 for fkey in arrowkeys:
                     if fkey != key.name and key.name in arrowkeys:
                         keyboard.release(fkey)
+                        
             keyboard.on_press(chopsticks)
 
         # 6.遮住屏幕右侧3/4的区域
@@ -283,7 +316,7 @@ class Contract:
             
             def stromstart():
                 while True:
-                    if keyboard.is_pressed("delete"):
+                    if keyboard.is_pressed("esc"):
                         storm.destroy()
                     elif keyboard.is_pressed("space"):
                         if self.lock == 0:
@@ -377,7 +410,7 @@ class MainProgram:
         os.execl(python, python, *sys.argv)  # 启动一个新的 Python 进程
 
     def run(self):
-        keyboard.on_press_key('delete', self.restart_program)
+        keyboard.on_press_key('esc', self.restart_program)
         while True:
             print("请选择挑战合约: \n")
             os.system('cls')  # 清除终端内的文字
