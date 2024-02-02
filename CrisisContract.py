@@ -18,16 +18,16 @@ class Contract:
     def __init__(self):
         # 合约的二维列表, 每个条目内的参数为 [分数, 内容, 选中状态]
         self.contract_list = [
-                [20, '冲刺附带两秒冷却'],
+                [30, '冲刺附带三秒冷却'],
                 [60, '禁止向左移动'],
                 [25, '出现弹跳窗口遮挡屏幕'],
-                [25, '按下方向键后立刻触发冲刺'],
-                [35, '只能同时按下一个方向键'],
-                [35, '遮住屏幕右侧3/4的区域'],
+                [20, '按下方向键后立刻触发冲刺'],
+                [25, '只能同时按下一个方向键'],
+                [30, '遮住屏幕右侧3/4的区域'],
                 [40, '上下翻转屏幕'],
-                [25, '屏幕逐渐变暗，按空格恢复'],
-                [20, '不断出现窗口遮挡屏幕'],
-                [1,  '检测']
+                [30, '屏幕逐渐变暗，按空格恢复'],
+                [30, '不断出现窗口遮挡屏幕'],
+                [20,  '随机选择1-3种']
             ]
         
         self.score = 0  # 总分数
@@ -53,7 +53,7 @@ class Contract:
 
     # 输入选择合约条目 (返回值: 0循环 1结束 2报错)
     def choose(self):
-        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n")
+        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按R键退出之前不要切换到其他窗口\n")
         try:
             if ids == '':  # 若用户只输入回车
                 return 1
@@ -66,6 +66,10 @@ class Contract:
                         #     self.contract_list[3][2] = '-'
                         # elif id == 4:
                         #     self.contract_list[2][2] = '-'
+                        if id == 10:
+                            random_contract = [random.randint(1, 9) for _ in range(3)]
+                            for i in range(3):
+                                self.contract_list[random_contract[i]][2] = '√'
                         self.contract_list[id-1][2] = '√'
                     else:
                         self.contract_list[id-1][2] = '-'
@@ -140,7 +144,7 @@ class Contract:
                 if e.name == "space" and not spaceblocking:
                     spaceblocking = True
                     keyboard.block_key("space")
-                    time.sleep(2)
+                    time.sleep(3)
                     keyboard.unblock_key("space")
                     keyboard.release("space")
                     spaceblocking = False
@@ -189,20 +193,22 @@ class Contract:
 
         # 4.按下方向键后立刻触发冲刺
         if self.contract_list[3][2] == "√":
-            spaceblocking = False
-            def on_key_event(e):
+            def on_key_event_4(e):
                 nonlocal spaceblocking
                 if e.name in arrowkeys and not spaceblocking:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            keyboard.send('space')
+                            if not self.contract_list[2][2] == "√":
+                                keyboard.send('space')
                             if self.contract_list[0][2] == "√":
                                 class espace:
                                     pass
                                 espace = espace()
                                 espace.name = "space"
                                 space_event(espace)
-            keyboard.on_press(on_key_event)     # 监听按键事件
+                                
+            spaceblocking = False                    
+            keyboard.on_press(on_key_event_4)     # 监听按键事件
 
         # 5.只能同时按下一个方向键
         if self.contract_list[4][2] == "√":
@@ -210,6 +216,7 @@ class Contract:
                 for fkey in arrowkeys:
                     if fkey != key.name and key.name in arrowkeys:
                         keyboard.release(fkey)
+                        
             keyboard.on_press(chopsticks)
 
         # 6.遮住屏幕右侧3/4的区域
@@ -249,6 +256,7 @@ class Contract:
                         SetWindowLong(hWindow, GWL_EXSTYLE, exStyle)
                         SetLayeredWindowAttributes(hWindow, RGB(0, 0, 0), 150, LWA_ALPHA)
                         break
+                    time.sleep(0.1)
        
             def set_transparency(window, alpha):
                 window.attributes('-alpha', alpha)  # 设置窗口透明度
@@ -380,7 +388,7 @@ class Contract:
         if self.contract_list[9][2] == "√":
             def test():
                 while True:
-                    print(spaceblocking)
+                    pass
             testthread = threading.Thread(target=test)
             testthread.start()
         root.mainloop()
