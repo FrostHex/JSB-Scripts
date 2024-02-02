@@ -53,7 +53,7 @@ class Contract:
 
     # 输入选择合约条目 (返回值: 0循环 1结束 2报错)
     def choose(self):
-        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按ESC键退出之前不要切换到其他窗口\n")
+        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按delete键退出之前不要切换到其他窗口\n")
         try:
             if ids == '':  # 若用户只输入回车
                 return 1
@@ -67,7 +67,7 @@ class Contract:
                         # elif id == 4:
                         #     self.contract_list[2][2] = '-'
                         if id == 1:
-                            random_contract = [random.randint(2, 10) for _ in range(3)]
+                            random_contract = [random.randint(1, 9) for _ in range(3)]
                             for i in range(3):
                                 self.contract_list[random_contract[i]][2] = '√'
                         self.contract_list[id-1][2] = '√'
@@ -79,25 +79,32 @@ class Contract:
                     print(f"输入的数字 {id} 不合理，请重新输入!")
                     time.sleep(1)
             return 0
-        except:
-            print("输入有误!")
-            time.sleep(1)
+        except Exception as e:
+            print(f"发生了异常：{e}")
+            print(random_contract)
+            time.sleep(10)
             return 2  # 目前没用上
 
     # 开始运行合约
     def run(self):
         # 用文档记录分数
-        def append_to_score_file(text):
+        def append_to_score_file(score):
             file_path = "Score.txt"
 
             # 检查文件是否存在，如果不存在则创建
             if not os.path.exists(file_path):
                 with open(file_path, 'w') as file:
                     file.write("")
+            contract_name = []
+            for ctr in self.contract_list:
+                if ctr[2] == '√':
+                    contract_name.append(ctr[1])
 
+            contract_name_utf8 = str(contract_name)
+            
             # 在文件末尾追加一行文字
-            with open(file_path, 'a') as file:
-                file.write(text + "\n")
+            with open(file_path, 'a', encoding='utf-8') as file:
+                file.write("\n" + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t'+ contract_name_utf8 + '\t' + score + "\n")
         
         # 生成小悬浮窗提示合约启动
         def start_root(window):
@@ -110,7 +117,7 @@ class Contract:
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按 ESC 键退出", font=font_style, fg="white", bg="black")
+            label = tk.Label(root, text="合约启动 按 delete 键退出", font=font_style, fg="white", bg="black")
             label.pack(pady=60)
 
         def hide_root(window, delay):
@@ -128,13 +135,14 @@ class Contract:
 
         # keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-        print("开始运行合约, 按 ESC 键终止程序")
-        append_to_score_file(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\t' + str(self.score))
+        print("开始运行合约, 按 delete 键终止程序")
+        append_to_score_file(str(self.score))
         root = tk.Tk()
         start_root(root)
         root.after(2000, lambda: hide_root(root, 0))
         # detectthread = threading.Thread(target=DetectionThread)
         # detectthread.start()
+        time.sleep(2)
 
 
         #=================================== 合约内容代码 ===================================#
@@ -146,7 +154,8 @@ class Contract:
                 if e.name in arrowkeys and not spaceblocking:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            if self.contract_list[2][2] == "√":
+                            keyboard.send('space')
+                            if self.contract_list[0][2] == "√":
                                 class espace:
                                     pass
                                 espace = espace()
@@ -187,7 +196,7 @@ class Contract:
                 def open_window():
                     # 初始化
                     window = [tk.Toplevel(root) for _ in range(6)] # 创建6个顶级窗口
-                    sidelength = window[0].winfo_screenwidth() // 6 # 计算每个窗口的边长
+                    sidelength = window[0].winfo_screenwidth() // 4 # 计算每个窗口的边长
                     width = window[0].winfo_screenwidth() - sidelength # 计算窗口的宽度
                     height = window[0].winfo_screenheight() - sidelength # 计算窗口的高度
                     vx = [10 + random.randint(-5,5) for _ in range(6)] # 随机生成水平速度
@@ -271,7 +280,7 @@ class Contract:
 
         # 6.不断出现窗口遮挡屏幕
         if self.contract_list[5][2] == "√":
-            if not self.contract_list[4][2] == "√":
+            # if not self.contract_list[4][2] == "√":
                 def set_window2(window):
                     window.title("HELLO")
                     window.configure(bg="#fe1f6f")
@@ -383,7 +392,7 @@ class Contract:
             
             def stromstart():
                 while True:
-                    if keyboard.is_pressed("esc"):
+                    if keyboard.is_pressed("delete"):
                         storm.destroy()
                     elif keyboard.is_pressed("space"):
                         if self.lock == 0:
@@ -440,6 +449,7 @@ class Contract:
             keyboard.block_key("left")
             keyboard.block_key("a")
 
+        root.mainloop()
         #===================================================================================#
 
 
@@ -457,7 +467,7 @@ class MainProgram:
         os.execl(python, python, *sys.argv)  # 启动一个新的 Python 进程
 
     def run(self):
-        keyboard.on_press_key('esc', self.restart_program)
+        keyboard.on_press_key('delete', self.restart_program)
         while True:
             print("请选择挑战合约: \n")
             os.system('cls')  # 清除终端内的文字
