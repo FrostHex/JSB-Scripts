@@ -18,7 +18,7 @@ class Contract:
     def __init__(self):
         # 合约的二维列表, 每个条目内的参数为 [分数, 内容, 选中状态]
         self.contract_list = [
-                [30, '冲刺附带三秒冷却'],
+                [25, '冲刺附带三秒冷却'],
                 [60, '禁止向左移动'],
                 [25, '出现弹跳窗口遮挡屏幕'],
                 [20, '按下方向键后立刻触发冲刺'],
@@ -195,29 +195,37 @@ class Contract:
                     sidelength = window.winfo_screenwidth() // 5
                     width = window.winfo_screenwidth() - sidelength
                     height = window.winfo_screenheight() - sidelength
-                    vx = 40
-                    vy = 20
+                    vx = 20
+                    vy = 15
                     x = random.randint(0, width)
                     y = random.randint(0, height)
 
-                    window.title("弹弹弹")
+                    # window.title("弹弹弹")
                     window.configure(bg="#fe1f6f")
                     window.attributes('-topmost', True)
                     window.attributes('-disabled', True)
 
 
                     def shrink_window(windows):
-                        # 获取当前窗口的宽度和高度
-                        current_width = windows.winfo_width()
-                        current_height = windows.winfo_height()
+                        # 拖尾窗口降低大小
+                        # # 获取当前窗口的宽度和高度
+                        # current_width = windows.winfo_width()
+                        # current_height = windows.winfo_height()
+                        # # 减小窗口的宽度和高度
+                        # new_width = current_width - 10
+                        # new_height = current_height - 10
+                        # # 更新窗口大小
+                        # if new_width >= 0 and new_height >= 0:
+                        #     windows.geometry(f"{new_width}x{new_height}+{windows.winfo_x() + 5}+{windows.winfo_y() + 5}")
+                        # else:
+                        #     windows.destroy()
 
-                        # 减小窗口的宽度和高度
-                        new_width = current_width - 10
-                        new_height = current_height - 10
-
-                        # 更新窗口大小
-                        if new_width >= 0 and new_height >= 0:
-                            windows.geometry(f"{new_width}x{new_height}+{windows.winfo_x() + 5}+{windows.winfo_y() + 5}")
+                        # 拖尾窗口降低透明度
+                        # 获得透明度 减小窗口的透明度
+                        transparency = windows.attributes('-alpha') - 0.05
+                        # 更新窗口透明度
+                        if transparency >= 0:
+                            windows.attributes('-alpha', transparency)
                         else:
                             windows.destroy()
 
@@ -247,7 +255,7 @@ class Contract:
                         x = x + vx
                         y = y + vy
                         window.geometry(f"{sidelength}x{sidelength}+{x}+{y}")
-                        time.sleep(0.02)
+                        time.sleep(0.015)
 
             lockthread = threading.Thread(target=open_window)
             lockthread.start()
@@ -259,8 +267,6 @@ class Contract:
                 if e.name in arrowkeys and not spaceblocking:
                     for key in arrowkeys:
                         if keyboard.is_pressed(key):
-                            if not self.contract_list[2][2] == "√":
-                                keyboard.send('space')
                             if self.contract_list[0][2] == "√":
                                 class espace:
                                     pass
@@ -445,15 +451,6 @@ class Contract:
                     window.after(1000, lambda: window.destroy())
 
                 open_window(0)
-
-        # 10.测试
-        if self.contract_list[9][2] == "√":
-            def test():
-                while True:
-                    pass
-            testthread = threading.Thread(target=test)
-            testthread.start()
-        root.mainloop()
 
         #===================================================================================#
 
