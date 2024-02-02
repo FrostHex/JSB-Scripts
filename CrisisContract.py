@@ -53,7 +53,7 @@ class Contract:
 
     # 输入选择合约条目 (返回值: 0循环 1结束 2报错)
     def choose(self):
-        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按R键退出之前不要切换到其他窗口\n")
+        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按ESC键退出之前不要切换到其他窗口\n")
         try:
             if ids == '':  # 若用户只输入回车
                 return 1
@@ -160,35 +160,96 @@ class Contract:
 
         # 3.出现弹跳窗口遮挡屏幕
         if self.contract_list[2][2] == "√":
-            def open_window():
-                # 初始化
-                window = [tk.Toplevel(root) for _ in range(6)]
-                sidelength = window[0].winfo_screenwidth() // 6
-                width = window[0].winfo_screenwidth() - sidelength
-                height = window[0].winfo_screenheight() - sidelength
-                vx = [10 + random.randint(-5,5) for _ in range(6)]
-                vy = [10 + random.randint(-5,5) for _ in range(6)]
-                x = [random.randint(0, width) for _ in range(6)]
-                y = [random.randint(0, height) for _ in range(6)]
-                for i in range(6):
-                    window[i].title("弹弹弹")
-                    window[i].configure(bg="#fe1f6f")
-                    window[i].attributes('-topmost', True)  # 置顶窗口
-                    window[i].attributes('-disabled', True)  # 禁止点击
-                # 循环更新位置
-                while True:
+            if self.contract_list[8][2] == "√":
+                def open_window():
+                    # 初始化
+                    window = [tk.Toplevel(root) for _ in range(6)] # 创建6个顶级窗口
+                    sidelength = window[0].winfo_screenwidth() // 6 # 计算每个窗口的边长
+                    width = window[0].winfo_screenwidth() - sidelength # 计算窗口的宽度
+                    height = window[0].winfo_screenheight() - sidelength # 计算窗口的高度
+                    vx = [10 + random.randint(-5,5) for _ in range(6)] # 随机生成水平速度
+                    vy = [10 + random.randint(-5,5) for _ in range(6)] # 随机生成垂直速度
+                    x = [random.randint(0, width) for _ in range(6)] # 随机生成初始水平位置
+                    y = [random.randint(0, height) for _ in range(6)] # 随机生成初始垂直位置
                     for i in range(6):
-                        window[i].geometry(f"{sidelength}x{sidelength}+{x[i]}+{y[i]}")
-                        if x[i] >= width or x[i] <= 0:
-                            vx[i] = -1 * vx[i]
-                        if y[i] >= height or y[i] <= 0:
-                            vy[i] = -1 * vy[i]
-                        x[i] = x[i] + vx[i]
-                        y[i] = y[i] + vy[i]
-                    time.sleep(0.015)
-                # window.after(1000, lambda: window.destroy())
-            
-            lockthread = threading.Thread(target=open_window)  # 设置屏保窗口的线程
+                        window[i].title("弹弹弹") # 设置窗口标题
+                        window[i].configure(bg="#fe1f6f") # 设置窗口背景色为粉红色
+                        window[i].attributes('-topmost', True)  # 置顶窗口
+                        window[i].attributes('-disabled', True)  # 禁止点击
+                    # 循环更新位置
+                    while True:
+                        for i in range(6):
+                            window[i].geometry(f"{sidelength}x{sidelength}+{x[i]}+{y[i]}") # 设置窗口的几何属性
+                            if x[i] >= width or x[i] <= 0: # 如果窗口碰到水平边界，反转水平速度方向
+                                vx[i] = -1 * vx[i]
+                            if y[i] >= height or y[i] <= 0: # 如果窗口碰到垂直边界，反转垂直速度方向
+                                vy[i] = -1 * vy[i]
+                            x[i] = x[i] + vx[i] # 更新水平位置
+                            y[i] = y[i] + vy[i] # 更新垂直位置
+                        time.sleep(0.015)  # 稍微延迟，控制动画速度
+                    # window.after(1000, lambda: window.destroy())
+                
+            else:
+                def open_window():
+                    window = tk.Toplevel(root)  # 创建一个顶级窗口
+                    sidelength = window.winfo_screenwidth() // 5
+                    width = window.winfo_screenwidth() - sidelength
+                    height = window.winfo_screenheight() - sidelength
+                    vx = 40
+                    vy = 20
+                    x = random.randint(0, width)
+                    y = random.randint(0, height)
+
+                    window.title("弹弹弹")
+                    window.configure(bg="#fe1f6f")
+                    window.attributes('-topmost', True)
+                    window.attributes('-disabled', True)
+
+
+                    def shrink_window(windows):
+                        # 获取当前窗口的宽度和高度
+                        current_width = windows.winfo_width()
+                        current_height = windows.winfo_height()
+
+                        # 减小窗口的宽度和高度
+                        new_width = current_width - 10
+                        new_height = current_height - 10
+
+                        # 更新窗口大小
+                        if new_width >= 0 and new_height >= 0:
+                            windows.geometry(f"{new_width}x{new_height}+{windows.winfo_x() + 5}+{windows.winfo_y() + 5}")
+                        else:
+                            windows.destroy()
+
+                        # 每隔一段时间调用shrink_window函数
+                        if windows.winfo_exists():
+                            windows.after(100, shrink_window, windows)
+
+
+                    def set_track(window):
+                        window.geometry(f"{sidelength}x{sidelength}+{x}+{y}")
+                        window.configure(bg="#fe1f6f")
+                        window.overrideredirect(True)
+                        window.attributes('-topmost', True)
+                        shrink_window(window)
+                    counter = 0
+                    while True:
+                        counter += 1
+                        if counter == 5:
+                            counter = 0
+                            track = tk.Toplevel(root)  # 创建一个顶级窗口
+                            set_track(track)
+                        
+                        if x >= width or x <= 0:
+                            vx = -1 * vx
+                        if y >= height or y <= 0:
+                            vy = -1 * vy
+                        x = x + vx
+                        y = y + vy
+                        window.geometry(f"{sidelength}x{sidelength}+{x}+{y}")
+                        time.sleep(0.02)
+
+            lockthread = threading.Thread(target=open_window)
             lockthread.start()
 
         # 4.按下方向键后立刻触发冲刺
@@ -365,24 +426,25 @@ class Contract:
 
         # 9.不断出现窗口遮挡屏幕
         if self.contract_list[8][2] == "√":
-            def set_window2(window):
-                window.title("HELLO")
-                window.configure(bg="#fe1f6f")
-                window.attributes('-topmost', True)  # 置顶窗口
-                window.attributes('-disabled', True)  # 禁止点击
-                sidelength = window.winfo_screenwidth() // 4
-                width = window.winfo_screenwidth() - sidelength
-                height = window.winfo_screenheight() - sidelength
-                # 设置窗口位置和大小
-                window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
-                
-            def open_window(index):
-                window = tk.Toplevel(root)
-                set_window2(window)
-                window.after(200, lambda: open_window(index + 1))  # 200ms后执行匿名函数, 匿名函数调用 open_window 函数, 传参 index+1
-                window.after(1000, lambda: window.destroy())
+            if not self.contract_list[2][2] == "√":
+                def set_window2(window):
+                    window.title("HELLO")
+                    window.configure(bg="#fe1f6f")
+                    window.attributes('-topmost', True)  # 置顶窗口
+                    window.attributes('-disabled', True)  # 禁止点击
+                    sidelength = window.winfo_screenwidth() // 4
+                    width = window.winfo_screenwidth() - sidelength
+                    height = window.winfo_screenheight() - sidelength
+                    # 设置窗口位置和大小
+                    window.geometry(f"{sidelength}x{sidelength}+{random.randint(0, width)}+{random.randint(0, height)}") 
+                    
+                def open_window(index):
+                    window = tk.Toplevel(root)
+                    set_window2(window)
+                    window.after(200, lambda: open_window(index + 1))  # 200ms后执行匿名函数, 匿名函数调用 open_window 函数, 传参 index+1
+                    window.after(1000, lambda: window.destroy())
 
-            open_window(0)
+                open_window(0)
 
         # 10.测试
         if self.contract_list[9][2] == "√":
