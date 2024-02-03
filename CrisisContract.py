@@ -53,7 +53,8 @@ class Contract:
 
     # 输入选择合约条目 (返回值: 0循环 1结束 2报错)
     def choose(self):
-        ids = input("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n开始运行请直接输入回车\n你将有2秒准备时间，启动后请迅速切换至游戏\n在按delete键退出之前不要切换到其他窗口\n")
+        print("-"*15 + "\n请选择合约请输入数字序号并回车 (输入多个合约用空格分隔)\n" + "\033[32;1m" + "选择完成后开始运行请双击回车\n" + "\033[0m" + "您将有2秒准备时间, 启动后请迅速切换至游戏\n在按Delete键退出之前不要切换到其他窗口\n")
+        ids = input()
         try:
             if ids == '':  # 若用户只输入回车
                 return 1
@@ -117,7 +118,7 @@ class Contract:
             window.configure(bg="black")
             window.geometry(f"800x200+{rootx}+{rooty}")
             font_style = ("Segoe UI", 32, "bold")
-            label = tk.Label(root, text="合约启动 按 delete 键退出", font=font_style, fg="white", bg="black")
+            label = tk.Label(root, text="合约启动 按 Delete 键退出", font=font_style, fg="white", bg="black")
             label.pack(pady=60)
 
         def hide_root(window, delay):
@@ -135,7 +136,7 @@ class Contract:
 
         # keys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right', 'space']
         arrowkeys = ['w', 'a', 's', 'd', 'up', 'left', 'down', 'right']
-        print("开始运行合约, 按 delete 键终止程序")
+        print("\033[31;1m即将开始运行合约, 按 Delete 键终止程序\033[0m")
         append_to_score_file(str(self.score))
         root = tk.Tk()
         start_root(root)
